@@ -43,7 +43,8 @@ Example:
                 padding: 5px;
                 height: 100%;
                 box-sizing: border-box;
-                overflow-x: hidden;
+               
+                overflow: hidden;
                 --dark-primary-color: #1976D2;
                 --default-primary-color: #2196F3;
                 --light-primary-color: #FFF;
@@ -314,7 +315,7 @@ Example:
                         code = sweva.ComposableLoader.getDefaultComposition();
                     }
                     var obj = nodeManager.getComposition(code);
-                    console.log(obj);
+                   
                     this.fire('modelupdated', obj);
                 },
                 /*handleGenerateInputData: function () {
@@ -522,7 +523,7 @@ Example:
                         var editor = self.querySelector('#editor-dialog');
                         editor.init(yjs);
 
-                        console.log(self.querySelector('sweva-panel'))
+
                         yjs.share.project.observe(function (events) {
                             var code = yjs.share.project.get('code') || '';
                             // var input = yjs.share.project.get('input') || {};
