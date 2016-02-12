@@ -145,15 +145,7 @@
                                     }
                                 }
 
-                                /*if (element.index > options.index) {
-                                    inserted = true;
-                                    console.log(previousIndex, element.index, options.index)
-
-                                    inputContainer.index = previousIndex+(element.index - previousIndex) / 2.0;
-
-                                    Polymer.dom(parent).appendChild(inputContainer);
-                                }
-                                previousIndex = element.index;*/
+                               
                             }
 
                         }
@@ -173,6 +165,7 @@
                         Polymer.dom(parent).appendChild(inputContainer);
                     }
 
+                    
                     this.updateDOM();
 
                     if (typeof options === 'object') {
@@ -214,11 +207,13 @@
 
                     for (var i = 0; i < children.length; i++) {
                         var element = children[i];
+                        
                         copy.push(element);
                         Polymer.dom(parent).removeChild(element);
                     }
 
                     copy.sort(function (a, b) { return a.index - b.index; });
+                   
                     //console.log(children);
                     for (var i = 0; i < copy.length; i++) {
                         var element = copy[i];
@@ -284,6 +279,7 @@
                                             var type = map.get('type') || '';
                                             var label = map.get('label') || '';
                                             var stringvalue = map.get('stringvalue') || '';
+                                            var multilinevalue = map.get('multilinevalue') || '';
                                             var numbervalue = map.get('numbervalue') || '';
                                             var booleanvalue = map.get('booleanvalue') || '';
                                             var min = map.get('min') || '';
@@ -291,7 +287,7 @@
                                             var items = map.get('items') || '';
                                             var description = map.get('description') || '';
                                             var container = document.getElementById(event.name);
-
+                                           
                                             if (!container) {
 
                                                 container = self.add({
@@ -300,6 +296,7 @@
                                                     index: index,
                                                     label: label,
                                                     stringvalue: stringvalue,
+                                                    multilinevalue: multilinevalue,
                                                     numbervalue: numbervalue,
                                                     booleanvalue: booleanvalue,
                                                     min: min,

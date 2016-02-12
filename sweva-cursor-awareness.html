@@ -34,7 +34,7 @@
                     var cursor = document.getElementById(options.id);
                     if (options.id && !cursor) {
                         cursor = document.createElement("sweva-cursor");
-                        Polymer.dom(this.querySelector('div')).appendChild(cursor);
+                        Polymer.dom(this.$$('div')).appendChild(cursor);
                     }
                     
                     cursor.init(options);
@@ -45,7 +45,7 @@
                 remove: function(user){
                     var cursor = document.getElementById(user.id);
                     if (cursor) {
-                        Polymer.dom(this.querySelector('div')).removeChild(cursor);
+                        Polymer.dom(this.$$('div')).removeChild(cursor);
                         delete this.cursors[cursor.id];
                     }
                 },
@@ -64,7 +64,7 @@
                     }
                 },
                 cleanUp: function () {
-                    var div = this.querySelector('div');
+                    var div = this.$$('div');
                     for (var key in this.cursors) {
                         if (this.cursors.hasOwnProperty(key)) {
                             Polymer.dom(div).removeChild(this.cursors[key]);

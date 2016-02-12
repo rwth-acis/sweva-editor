@@ -51,6 +51,9 @@
                 width: 100%;
             }
 
+            paper-color-picker {
+                z-index: 5000;
+            }
             .header {
                 display: flex;
                 align-items:center;
@@ -400,7 +403,7 @@
                 },
                
                 handlePotentialAliasUpdate: function (event) {
-                    var input = this.querySelector('#node-alias');
+                    var input = this.$$('#node-alias');
                     if (input && this.selectedNode) {
                         if (input.value != this.selectedNode.alias) {
                             input.value = this.selectedNode.alias;
@@ -422,25 +425,25 @@
                     }
                 },
                 handleImportNodeJSON: function () {
-                    var dialog = this.querySelector('#import-export-dialog');
+                    var dialog = this.$$('#import-export-dialog');
                     if (dialog) {
                         dialog.openImport('importNodeJson', 'Import Node as JSON');
                     }
                 },
                 handleImportNodeObject: function () {
-                    var dialog = this.querySelector('#import-export-dialog');
+                    var dialog = this.$$('#import-export-dialog');
                     if (dialog) {
                         dialog.openImport('importNodeObject', 'Import Node as Object');
                     }
                 },
                 handleImportCompositionJSON: function () {
-                    var dialog = this.querySelector('#import-export-dialog');
+                    var dialog = this.$$('#import-export-dialog');
                     if (dialog) {
                         dialog.openImport('importCompositionJSON', 'Import Project as JSON');
                     }
                 },
                 handleImportCompositionObject: function () {
-                    var dialog = this.querySelector('#import-export-dialog');
+                    var dialog = this.$$('#import-export-dialog');
                     if (dialog) {
                         dialog.openImport('importCompositionObject', 'Import Project as Object');
                     }
@@ -560,8 +563,8 @@
                             usercolor.green = color.g;
                             usercolor.blue = color.b;
 
-                            this.querySelector('paper-color-input').value = usercolor;
-                            this.querySelector('paper-color-input').ready();
+                            this.$$('paper-color-input').value = usercolor;
+                            this.$$('paper-color-input').ready();
                         }
                     }
                 }

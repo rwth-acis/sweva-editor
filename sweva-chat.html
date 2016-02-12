@@ -9,7 +9,7 @@
             :host {
                 display: block;
                 position: absolute;
-                width: 300px;
+                width: 200px;
                 max-height: 300px;
                 pointer-events: none;
                 z-index: 9;
@@ -26,7 +26,7 @@
                 pointer-events: none;
                 overflow: hidden;
                 text-shadow: 1px 1px 6px #fff;
-                height: 240px;
+                height: 160px;
             }
 
             .type-area {
@@ -165,7 +165,8 @@
                         for (var i = 0; i < events.length; i++) {   
                             
                             if (events[i].type === 'insert') {
-                                self.appendMessage(events[i].object.valArray[events[i].index], events[i].index);
+                                
+                                self.appendMessage(events[i].object._content[events[i].index].val, events[i].index);
                             } else if (events[i].type === 'delete') {
                                 self.removeMessage(events[i].index);
 

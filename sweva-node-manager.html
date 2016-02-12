@@ -21,7 +21,7 @@
                 
             </content>            
         </div>
-        <sweva-input-mapper id="input-node-container"></sweva-input-mapper>
+        <sweva-input-mapper id="input-mapper"></sweva-input-mapper>
     </template>
     <script>
         (function () {
@@ -71,6 +71,9 @@
                     }
                     
 
+                },
+                handleNodCreated: function (event) {
+                    this.fire('nodecreated', event.detail);
                 },
                 handleNodeSelected: function (event) {
 
@@ -178,7 +181,7 @@
                         composition.links[alias].push(toMap);
                     }
 
-                    for (var key in composition.composables) {
+                    /*for (var key in composition.composables) {
                        
                         if (composition.composables.hasOwnProperty(key)) {
                             if (typeof nodesWithConnections[key]==='undefined') {
@@ -186,11 +189,11 @@
                                 delete composition.composables[key];
                             }
                         }
-                    }
+                    }*/
 
                     composition.controls = {};
                     composition.visualization = '';
-                    var container = this.$$('#input-node-container');
+                    var container = this.$$('#input-mapper');
                     if (container) {
                         var mapping = container.getInformation();
                         composition.visualization = mapping.visualization;
@@ -267,15 +270,15 @@
                             var realNode = graph.nodes[v];
 
                             realNode.posX = -canvasOffset.x + node.x;
-                            realNode.posY = -canvasOffset.y + node.y;
+                            realNode.posY = -canvasOffset.y+400 + node.y;
                             realNode.updatePos();
 
                         }
                     });
 
-                    var container = this.$$('#input-node-container');
+                    var container = this.$$('#input-mapper');
                     if (container) {
-                        container.updatePos(-canvasOffset.x, -canvasOffset.y  - 500);
+                        container.updatePos(-canvasOffset.x, -canvasOffset.y);
 
                     }
 
@@ -293,7 +296,7 @@
                         nodes[i].remove();
                     }
 
-                    var container = this.$$('#input-node-container');
+                    var container = this.$$('#input-mapper');
                     if (container) {
                         container.clear();
                     }
@@ -382,7 +385,7 @@
                         }
                        
                         if (obj.controls) {
-                            var container = self.$$('#input-node-container');
+                            var container = self.$$('#input-mapper');
                            
                             if (container) {
                                 
@@ -412,7 +415,7 @@
                             }                           
                         }
                         if (obj.visualization) {
-                            var container = self.$$('#input-node-container');
+                            var container = self.$$('#input-mapper');
                            
                             if (container) {
                                 container.setVisualization(obj.visualization);
@@ -461,12 +464,14 @@
                                     var code = sweva.ComposableLoader.convertJsonToCode(response.data);
 
                                     node.init(self.jsPlumbInstance, self.yjs, self.edges, alias, code, fixed, { x: x, y: y });
+                                    node.addEventListener('created', self.handleNodeCreated);
                                     node.addEventListener('selected', self.handleNodeSelected);
                                     resolve(node);
                                 })
                             }
                             else {
                                 node.init(self.jsPlumbInstance, self.yjs, self.edges, options.alias, code, fixed, { x: x, y: y });
+                                node.addEventListener('created', self.handleNodeCreated);
                                 node.addEventListener('selected', self.handleNodeSelected);
                                 resolve(node);
                             }
@@ -483,12 +488,208 @@
                     Polymer.dom(this).appendChild(node);
 
                     node.init(this.jsPlumbInstance, this.yjs, this.edges, nodeData.alias, nodeData.code, nodeData.fixed, { x: nodeData.x, y: nodeData.y }, nodeData.id, true);
+                    node.addEventListener('created', this.handleNodeCreated);
                     node.addEventListener('selected', this.handleNodeSelected);
                    
                     return node;
                 },
                 init: function (yjs) {
                     this.yjs = yjs;
+                    var self = this;
+
+
+                    jsPlumb.ready(function () {
+
+                        var instance = window.jsp = jsPlumb.getInstance({
+                            // default drag options
+                            DragOptions: { cursor: 'pointer', zIndex: 2000 },
+                            // the overlays to decorate each connection with.  note that the label overlay uses a function to generate the label text; in this
+                            // case it returns the 'labelText' member that we set on each connection in the 'init' method below.
+                            ConnectionOverlays: [
+                                ["PlainArrow", { location: 1 }]
+                            ],
+                            Container: "canvas"
+                        });
+                        self.jsPlumbInstance = instance;
+                        instance.Defaults.Container = document.getElementById('canvas');
+
+                        self.fire('jsplumbloaded', instance);
+                        var init = function (connection) {
+                            //  connection.getOverlay("label").setLabel(connection.sourceId.substring(15) + "-" + connection.targetId.substring(15));
+                        };
+                        instance.registerEndpointTypes({
+
+                            "invalid": {
+                                paintStyle: {
+                                    strokeStyle: "#ff0000",
+                                    fillStyle: "#ff0000",
+                                    radius: 10,
+                                    lineWidth: 4
+                                },
+                            }
+                        });
+                        // suspend drawing and initialise.
+                        instance.batch(function () {
+
+                            // listen for new connections; initialise them the same way we initialise the connections at startup.
+                            instance.bind("connection", function (connInfo, originalEvent) {
+                                init(connInfo.connection);
+                            });
+
+                            // make all the window divs draggable
+
+                            //instance.draggable(jsPlumb.getSelector('sweva-node'), { grid: [20, 20] });
+
+                            //instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
+                            // THIS DEMO ONLY USES getSelector FOR CONVENIENCE. Use your library's appropriate selector
+                            // method, or document.querySelectorAll:
+                            //jsPlumb.draggable(document.querySelectorAll(".window"), { grid: [20, 20] });
+
+                            // connect a few up
+                            // instance.connect({ uuids: ["node1_13", "node2_12"], editable: true });
+
+                            //
+                            // listen for clicks on connections, and offer to delete connections on click.
+                            //
+                            instance.bind("click", function (conn, originalEvent) {
+                                // if (confirm("Delete connection from " + conn.sourceId + " to " + conn.targetId + "?"))
+                                //   instance.detach(conn);
+                                conn.toggleType("basic");
+                            });
+                            instance.bind("beforeDrop", function (connection) {
+
+                                if (connection.sourceId === connection.targetId) {
+                                    return false;
+                                }
+                                var source = document.getElementById(connection.sourceId);
+
+                                if (source && source.tagName == 'SWEVA-INPUT-CONTAINER' && !connection.dropEndpoint.isInput) {
+                                    return false;
+                                }
+
+                                return true;
+                            });
+                            instance.bind("connectionMoved", function (info) {
+                                if (info.originalSourceEndpoint.getUuid() == info.newSourceEndpoint.getUuid()
+                                       && info.originalTargetEndpoint.getUuid() == info.newTargetEndpoint.getUuid()) {
+                                    return;
+                                }
+                                var node = document.getElementById(info.originalSourceId);
+                                if (node) {
+
+                                    //console.log('moved', info.originalSourceEndpoint.getUuid(), info.originalTargetEndpoint.getUuid());
+
+                                    self.yjs.share.edges.delete(info.originalSourceEndpoint.getUuid() + info.originalTargetEndpoint.getUuid());
+                                    self.yjs.share.edges.set(info.newSourceEndpoint.getUuid() + info.newTargetEndpoint.getUuid(), Y.Map).then(function (map) {
+
+                                        map.set('source', info.originalSourceId);
+                                        map.set('target', info.newTargetId);
+                                        map.set('sourceEndpoint', info.newSourceEndpoint.getUuid());
+                                        map.set('targetEndpoint', info.newTargetEndpoint.getUuid());
+
+                                    });
+
+                                }
+                                self.wasMoved = true;
+                            });
+                            instance.bind("connectionDrag", function (connection) {
+                                //console.log("connection " + connection.id + " is being dragged. suspendedElement is ", connection.suspendedElement, " of type ", connection.suspendedElementType);
+
+                                //console.log(connection);
+
+                                var targetEndpoint = null;
+                                var sourceEndpoint = null;
+                                var sourceTooltip = '';
+                                for (var i = 0; i < connection.endpoints.length; i++) {
+                                    var endpoint = connection.endpoints[i];
+                                    if (endpoint.isSource) {
+                                        sourceEndpoint = endpoint.getUuid();
+                                        if (typeof endpoint.tooltip === 'string') {
+                                            sourceTooltip = endpoint.tooltip.trim();
+                                        }
+                                    }
+                                    else if (endpoint.isTarget) {
+                                        targetEndpoint = endpoint.getUuid();
+                                    }
+
+                                }
+                                if (connection.sourceId && connection.targetId) {
+                                    self.lastDraggedConnection.sourceId = connection.sourceId;
+                                    self.lastDraggedConnection.sourceEndpoint = sourceEndpoint;
+                                    self.lastDraggedConnection.targetEndpoint = targetEndpoint;
+                                }
+
+                                self.jsPlumbInstance.selectEndpoints().each(function (endpoint) {
+
+                                    //simple, make it more sophisticated
+                                    if (sourceTooltip.length > 0 && typeof endpoint.tooltip == 'string' && endpoint.tooltip.trim().length > 0) {
+                                        if (sourceTooltip != endpoint.tooltip.trim()) {
+                                            endpoint.setType("invalid");
+                                        }
+                                    }
+
+                                });
+
+                            });
+
+                            instance.bind("connectionDragStop", function (connection) {
+                                //console.log("connection " + connection.id + " was dragged");
+                                if (self.wasMoved) {
+                                    self.wasMoved = false;
+                                    return;
+                                }
+                                if (connection.source && connection.target) {
+
+                                    var targetEndpoint = null;
+                                    var sourceEndpoint = null;
+                                    for (var i = 0; i < connection.endpoints.length; i++) {
+                                        var endpoint = connection.endpoints[i];
+                                        if (endpoint.isSource) {
+                                            sourceEndpoint = endpoint.getUuid();
+                                        }
+                                        else if (endpoint.isTarget) {
+                                            targetEndpoint = endpoint.getUuid();
+                                        }
+
+                                    }
+
+                                    connection.source.addConnection(sourceEndpoint, connection.targetId, targetEndpoint);
+                                }
+                                else {
+                                    if (self.lastDraggedConnection) {
+                                        var node = document.getElementById(self.lastDraggedConnection.sourceId);
+                                        if (node) {
+                                            node.removeConnection(self.lastDraggedConnection.sourceEndpoint, self.lastDraggedConnection.targetEndpoint);
+                                        }
+                                    }
+
+                                }
+                                self.jsPlumbInstance.selectEndpoints().each(function (endpoint) {
+                                    endpoint.removeType("invalid");
+                                });
+
+                            });
+
+
+                        });
+
+                        jsPlumb.fire("jsPlumbDemoLoaded", instance);
+                        self.loaded();
+
+                    });
+
+
+                    
+                },
+                ready: function () {
+
+                },
+                attached: function () {
+                   
+                },
+
+                loaded: function () {
+                    var yjs = this.yjs;
                     var self = this;
                     yjs.share.nodes.observe(function (events) {
 
@@ -502,70 +703,70 @@
                                         yjs.share.nodes.get(event.name).then(function (map) {
 
                                             var position = map.get('position') || { x: 0, y: 0 };
-                                            var alias = map.get('alias')||'node';
+                                            var alias = map.get('alias') || 'node';
                                             var code = map.get('code') || '';
-                                            var fixed = map.get('fixed')?true:false;
+                                            var fixed = map.get('fixed') ? true : false;
                                             //var code = codeObj.toString();
                                             //console.log(code);
-                                           
-                                           
-                                                var node = document.getElementById(event.name);
-                                                
-                                                if (!node) {
-                                                    node = self.yjsCreateNode({ id: event.name, alias: alias, code: code, fixed:fixed, x: position.x, y: position.y });
-                                                    
-                                                   
-                                                }
-                                                var nodes = self.querySelectorAll('sweva-node');
 
-                                                for (var k = 0; k < nodes.length; k++) {
-                                                    nodes[k].updateConnections();
-                                                }
 
-                                                nodes = self.querySelectorAll('sweva-input-container');
-                                                for (var k = 0; k < nodes.length; k++) {
-                                                    nodes[k].updateConnections();
-                                                }
-                                                self.jsPlumbInstance.repaintEverything();
-                                                
-                                               
-                                                map.observe(function (events2) {
-                                                    
-                                                    var position = map.get('position');
-                                                    var alias = map.get('alias');
-                                                    var code = map.get('code');
-                                                    var fixed = map.get('fixed');
-                                                    if (position != null && code != null && alias != null) {//prevent randomly inserting nodes at 0 0
-                                                        
-                                                        var node = document.getElementById(event.name);
+                                            var node = document.getElementById(event.name);
 
-                                                        if (!node) {
-                                                            return;
-                                                        }
-                                                        //node.jsPlumbInstance = self.jsPlumbInstance;
-                                                        if (node.alias != alias) {
-                                                            node.alias = alias;
-                                                        }
-                                                        if (node.code != code) {
-                                                            node.updateCode(code, true);
-                                                        }
-                                                        if (typeof fixed !== 'undefined' && node.fixed != fixed) {
-                                                            node.fixed = fixed;
-                                                        }
-                                                       
-                                                        if (node.posX != position.x
-                                                            || node.posY != position.y) {
-                                                           
-                                                            
-                                                            node.animatePos(position.x, position.y, true);
-                                                            
-                                                          
-                                                        }
+                                            if (!node) {
+                                                node = self.yjsCreateNode({ id: event.name, alias: alias, code: code, fixed: fixed, x: position.x, y: position.y });
+
+
+                                            }
+                                            var nodes = self.querySelectorAll('sweva-node');
+
+                                            for (var k = 0; k < nodes.length; k++) {
+                                                nodes[k].updateConnections();
+                                            }
+
+                                            nodes = self.querySelectorAll('sweva-input-container');
+                                            for (var k = 0; k < nodes.length; k++) {
+                                                nodes[k].updateConnections();
+                                            }
+                                            self.jsPlumbInstance.repaintEverything();
+
+
+                                            map.observe(function (events2) {
+
+                                                var position = map.get('position');
+                                                var alias = map.get('alias');
+                                                var code = map.get('code');
+                                                var fixed = map.get('fixed');
+                                                if (position != null && code != null && alias != null) {//prevent randomly inserting nodes at 0 0
+
+                                                    var node = document.getElementById(event.name);
+
+                                                    if (!node) {
+                                                        return;
+                                                    }
+                                                    //node.jsPlumbInstance = self.jsPlumbInstance;
+                                                    if (node.alias != alias) {
+                                                        node.alias = alias;
+                                                    }
+                                                    if (node.code != code) {
+                                                        node.updateCode(code, true);
+                                                    }
+                                                    if (typeof fixed !== 'undefined' && node.fixed != fixed) {
+                                                        node.fixed = fixed;
+                                                    }
+
+                                                    if (node.posX != position.x
+                                                        || node.posY != position.y) {
+
+
+                                                        node.animatePos(position.x, position.y, true);
+
 
                                                     }
-                                                });
 
-                                            
+                                                }
+                                            });
+
+
                                         });
                                     }
                                     catch (e) {
@@ -576,7 +777,7 @@
                                     var node = document.getElementById(event.name);
                                     if (node) {
                                         node.remove(true);
-                                        
+
                                         self.jsPlumbInstance.repaintEverything();
                                     }
 
@@ -642,7 +843,9 @@
                                         var node = document.getElementById(edge.source);
                                         if (node) {
                                             node.removeConnection(edge.sourceEndpoint, edge.targetEndpoint, true);
-                                            node.repaint();
+                                            if (node.repaint) {
+                                                node.repaint();
+                                            }
                                         }
                                         delete self.edges[event.name];
                                     }
@@ -653,194 +856,8 @@
                     });
 
 
-                    var container = this.$$('#input-node-container');
+                    var container = this.$$('#input-mapper');
                     container.init(this.jsPlumbInstance, this.yjs, this.edges);
-                },
-                ready: function () {
-
-                },
-                attached: function () {
-                    var self = this;
-
-                    jsPlumb.ready(function () {
-
-                        var instance = window.jsp = jsPlumb.getInstance({
-                            // default drag options
-                            DragOptions: { cursor: 'pointer', zIndex: 2000 },
-                            // the overlays to decorate each connection with.  note that the label overlay uses a function to generate the label text; in this
-                            // case it returns the 'labelText' member that we set on each connection in the 'init' method below.
-                            ConnectionOverlays: [
-                                ["PlainArrow", { location: 1 }]
-                            ],
-                            Container: "canvas"
-                        });
-                        self.jsPlumbInstance = instance;
-                        instance.Defaults.Container = document.getElementById('canvas');
-
-                        self.fire('jsplumbloaded', instance);
-                        var init = function (connection) {
-                            //  connection.getOverlay("label").setLabel(connection.sourceId.substring(15) + "-" + connection.targetId.substring(15));
-                        };
-                        instance.registerEndpointTypes({
-                            
-                            "invalid": {
-                                paintStyle: {
-                                    strokeStyle: "#ff0000",
-                                    fillStyle: "#ff0000",
-                                    radius: 10,
-                                    lineWidth: 4
-                                },
-                            }
-                        });
-                        // suspend drawing and initialise.
-                        instance.batch(function () {
-
-                            // listen for new connections; initialise them the same way we initialise the connections at startup.
-                            instance.bind("connection", function (connInfo, originalEvent) {
-                                init(connInfo.connection);
-                            });
-
-                            // make all the window divs draggable
-
-                            //instance.draggable(jsPlumb.getSelector('sweva-node'), { grid: [20, 20] });
-                         
-                            //instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
-                            // THIS DEMO ONLY USES getSelector FOR CONVENIENCE. Use your library's appropriate selector
-                            // method, or document.querySelectorAll:
-                            //jsPlumb.draggable(document.querySelectorAll(".window"), { grid: [20, 20] });
-
-                            // connect a few up
-                            // instance.connect({ uuids: ["node1_13", "node2_12"], editable: true });
-
-                            //
-                            // listen for clicks on connections, and offer to delete connections on click.
-                            //
-                            instance.bind("click", function (conn, originalEvent) {
-                                // if (confirm("Delete connection from " + conn.sourceId + " to " + conn.targetId + "?"))
-                                //   instance.detach(conn);
-                                conn.toggleType("basic");
-                            });
-                            instance.bind("beforeDrop", function (connection) {
-                                
-                                if (connection.sourceId === connection.targetId) {
-                                    return false;
-                                }
-                                var source = document.getElementById(connection.sourceId);
-                                
-                                if (source && source.tagName == 'SWEVA-INPUT-CONTAINER' && !connection.dropEndpoint.isInput) {
-                                    return false;
-                                }
-
-                                return true;
-                            });
-                            instance.bind("connectionMoved", function (info) {
-                                if (info.originalSourceEndpoint.getUuid() == info.newSourceEndpoint.getUuid()
-                                       && info.originalTargetEndpoint.getUuid() == info.newTargetEndpoint.getUuid()) {
-                                    return;
-                                }
-                                var node = document.getElementById(info.originalSourceId);
-                                if (node) {
-                                   
-                                    //console.log('moved', info.originalSourceEndpoint.getUuid(), info.originalTargetEndpoint.getUuid());
-                                   
-                                    self.yjs.share.edges.delete(info.originalSourceEndpoint.getUuid() + info.originalTargetEndpoint.getUuid());
-                                    self.yjs.share.edges.set(info.newSourceEndpoint.getUuid() + info.newTargetEndpoint.getUuid(), Y.Map).then(function (map) {
-
-                                        map.set('source', info.originalSourceId);
-                                        map.set('target', info.newTargetId);
-                                        map.set('sourceEndpoint', info.newSourceEndpoint.getUuid());
-                                        map.set('targetEndpoint', info.newTargetEndpoint.getUuid());
-
-                                    });
-                                   
-                                }
-                                self.wasMoved = true;
-                            });
-                            instance.bind("connectionDrag", function (connection) {
-                                //console.log("connection " + connection.id + " is being dragged. suspendedElement is ", connection.suspendedElement, " of type ", connection.suspendedElementType);
-
-                                //console.log(connection);
-                                
-                                var targetEndpoint = null;
-                                var sourceEndpoint = null;
-                                var sourceTooltip='';
-                                for (var i = 0; i < connection.endpoints.length; i++) {
-                                    var endpoint = connection.endpoints[i];
-                                    if (endpoint.isSource) {
-                                        sourceEndpoint = endpoint.getUuid();
-                                        if (typeof endpoint.tooltip === 'string') {                                            
-                                            sourceTooltip = endpoint.tooltip.trim();
-                                        }
-                                    }
-                                    else if (endpoint.isTarget) {
-                                        targetEndpoint = endpoint.getUuid();
-                                    }
-
-                                }
-                                if (connection.sourceId && connection.targetId) {
-                                    self.lastDraggedConnection.sourceId = connection.sourceId;
-                                    self.lastDraggedConnection.sourceEndpoint = sourceEndpoint;
-                                    self.lastDraggedConnection.targetEndpoint = targetEndpoint;
-                                }
-                                
-                                self.jsPlumbInstance.selectEndpoints().each(function (endpoint) {
-                                    
-                                    //simple, make it more sophisticated
-                                    if (sourceTooltip.length > 0 && typeof endpoint.tooltip == 'string' && endpoint.tooltip.trim().length > 0) {
-                                        if (sourceTooltip != endpoint.tooltip.trim()) {
-                                            endpoint.setType("invalid");
-                                        }
-                                    }
-                                    
-                                });
-
-                            });
-
-                            instance.bind("connectionDragStop", function (connection) {
-                                //console.log("connection " + connection.id + " was dragged");
-                                if (self.wasMoved) {
-                                    self.wasMoved = false;
-                                    return;
-                                }
-                                if (connection.source && connection.target) {
-
-                                    var targetEndpoint = null;
-                                    var sourceEndpoint = null;
-                                    for (var i = 0; i < connection.endpoints.length; i++) {
-                                        var endpoint = connection.endpoints[i];
-                                        if (endpoint.isSource) {
-                                            sourceEndpoint = endpoint.getUuid();
-                                        }
-                                        else if (endpoint.isTarget) {
-                                            targetEndpoint = endpoint.getUuid();
-                                        }
-
-                                    }
-                                    
-                                    connection.source.addConnection(sourceEndpoint, connection.targetId, targetEndpoint);
-                                }
-                                else {
-                                    if (self.lastDraggedConnection) {
-                                        var node = document.getElementById(self.lastDraggedConnection.sourceId);
-                                        if (node) {
-                                            node.removeConnection(self.lastDraggedConnection.sourceEndpoint, self.lastDraggedConnection.targetEndpoint);
-                                        }
-                                    }
-
-                                }
-                                self.jsPlumbInstance.selectEndpoints().each(function (endpoint) {
-                                    endpoint.removeType("invalid");
-                                });
-
-                            });
-
-                           
-                        });
-
-                        jsPlumb.fire("jsPlumbDemoLoaded", instance);
-
-                    });
-
                 },
                 cleanUp: function () {
                     this.edges = [];

@@ -88,11 +88,12 @@ Example:
             <sweva-cursor-awareness id="cursor-awareness"></sweva-cursor-awareness>
             <sweva-node-manager canvas-offset="{{canvasOffset}}"
                                 on-jsplumbloaded="handleJsPlumbLoaded"
+                                on-nodecreated="handleNodeCreated"
                                 on-nodeselected="handleNodeSelection"
                                 on-editnode="handleEditNode"
                                 on-deletenode="handleDeleteNode"
-                                repository-address="{{repositoryAddress}}"
-                                repository-suffix="{{repositorySuffix}}">
+                                repository-url-prefix="{{repositoryUrlPrefix}}"
+                                repository-url-suffix="{{repositoryUrlSuffix}}">
             </sweva-node-manager>
         </sweva-canvas>
 
@@ -118,6 +119,10 @@ Example:
         <sweva-code id="editor-dialog"
                     on-edited="handleEditComplete">
         </sweva-code>
+
+        <div id="editors">
+
+        </div>
     </template>
 
     <script src="../yjs/y.js"></script>
@@ -129,10 +134,12 @@ Example:
     <script src="../y-memory/y-memory.js"></script>
     <script src="../y-map/y-map.js"></script>
     <script src="../y-array/y-array.js"></script>
-    <script src="../y-text/y-text.js"></script>
+    
+     <script src="../y-text/y-text.js"></script>
 
+    <!--<script src="../y-websockets-client/y-websockets-client.js"></script>-->
     <script src="y-websockets-client.js"></script>
-    <script src="Ace.es5.js"></script>
+    
 
     <script src="../gsap/src/minified/TweenLite.min.js"></script>
     <script src="../gsap/src/minified/plugins/CSSPlugin.min.js"></script>
@@ -162,13 +169,17 @@ Example:
                         type: Object,
                         value: null
                     },
-                    repositoryAddress: {
+                    repositoryUrlPrefix: {
                         type: String,
                         value: 'http://localhost:5001/examplesJSON/'
                     },
-                    repositorySuffix: {
+                    repositoryUrlSuffix: {
                         type: String,
                         value: '.json'
+                    },
+                    yjsServer: {
+                        type: String,
+                        value: 'http://localhost:1234'
                     },
                     project: {
                         type: Object,
@@ -199,77 +210,87 @@ Example:
                     this.start(this.room)
                 },
                 handleCollapsed: function(event) {
-                    var chat = this.querySelector('sweva-chat');
+                    var chat = this.$$('sweva-chat');
                     chat.collapsed = (event.detail);
+                },
+                handleNodeCreated: function (event) {
+                    var node = event.detail;
+                    var editor = document.createElement('sweva-node-editor');
+                    editor.id = node.id + 'editor';
+                    Polymer.dom(this.$.editors).appendChild(editor);
+                    Polymer.dom.flush();
+                   
+                    editor.init(this.yjs, node);
+                    
                 },
                 handleNodeSelection: function (event) {
 
-                    var panel = this.querySelector('sweva-panel');
+                    var panel = this.$$('sweva-panel');
                     panel.updateNode(event.detail);
-                    var userManager = this.querySelector('sweva-user-manager');
+                    var userManager = this.$$('sweva-user-manager');
 
                     userManager.updateSelectedNode(event.detail);
                 },
                 handleCanvasMouseMove: function (event) {
 
                     var position = event.detail;
-                    var userManager = this.querySelector('sweva-user-manager');
+                    var userManager = this.$$('sweva-user-manager');
 
                     userManager.updateCursor(position.x, position.y);
                 },
                 handleViewPortChanced: function (event) {
-                    var cursors = this.querySelector('#cursor-awareness');
+                    var cursors = this.$$('#cursor-awareness');
                     cursors.updateViewport(event.detail);
 
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.updateViewport(event.detail);
 
                 },
 
                 handleUserAdded: function (event) {
                     if (!event.detail.isSelf) {
-                        var cursors = this.querySelector('#cursor-awareness');
+                        var cursors = this.$$('#cursor-awareness');
                         cursors.add(event.detail);
                     }
 
                 },
                 handleUserDeleted: function (event) {
                     if (!event.detail.isSelf) {
-                        var cursors = this.querySelector('#cursor-awareness');
+                        var cursors = this.$$('#cursor-awareness');
                         cursors.remove(event.detail);
-                        var nodeManager = this.querySelector('sweva-node-manager');
+                        var nodeManager = this.$$('sweva-node-manager');
                         nodeManager.selectNodeBy('', '', '#fff');
                     }
 
                 },
                 handleUserUpdated: function (event) {
-                    var cursors = this.querySelector('#cursor-awareness');
+                    var cursors = this.$$('#cursor-awareness');
                     cursors.update(event.detail.id, event.detail);
                     if (!event.detail.isSelf && event.detail.selectedNode) {
-                        var userManager = this.querySelector('sweva-user-manager');
+                        var userManager = this.$$('sweva-user-manager');
                         var color = userManager.getUserColor(event.detail.id);
-                        var nodeManager = this.querySelector('sweva-node-manager');
+                        var nodeManager = this.$$('sweva-node-manager');
                         nodeManager.selectNodeBy(event.detail.selectedNode, event.detail.id, color);
                     }
                     if (event.detail.isSelf && (event.detail.name || event.detail.color)) {
-                        var panel = this.querySelector('sweva-panel');
+                        var panel = this.$$('sweva-panel');
                         
                         panel.updateUser(event.detail);
 
-                        var chat = this.querySelector('sweva-chat');
+                        var chat = this.$$('sweva-chat');
                         chat.updateUser(event.detail);
                     }
                 },
                 handleUserDataChanged: function (event) {
-                    var userManager = this.querySelector('sweva-user-manager');
+                    var userManager = this.$$('sweva-user-manager');
                     userManager.update(userManager.ownId, event.detail);
                 },
                 handleClearAll: function (event) {
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.clear();
                 },
                 handleDownloadProject: function () {
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     var code = this.project.code;
                     if (code.trim().length == 0) {
                         code = sweva.ComposableLoader.getDefaultComposition();
@@ -284,20 +305,20 @@ Example:
 
                 },
                 handleAutoLayout: function (event) {
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.autoLayout();
                 },
                 handleCreateNode: function (event) {
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.createNode(event.detail);
 
                 },
                 handleDeleteNode: function (event) {
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.deleteNode(event.detail);
                 },
                 handleEditProject: function () {
-                    var editor = this.querySelector('#editor-dialog');
+                    var editor = this.$$('#editor-dialog');
 
                     if (editor) {
                         var code = this.project.code;
@@ -309,7 +330,7 @@ Example:
                 },
                 handleUpdateModel: function () {
 
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     var code = this.project.code;
                     if (code.trim().length == 0) {
                         code = sweva.ComposableLoader.getDefaultComposition();
@@ -351,11 +372,13 @@ Example:
                     var node = event.detail;
 
                     if (node) {
-                        var editor = this.querySelector('#editor-dialog');
+
+                        node.edit();
+                       /* var editor = this.$$('#editor-dialog');
                         if (editor) {
                             editor.open('Edit Node ' + node.alias, node.id, node.code);
 
-                        }
+                        }*/
                     }
 
                 },
@@ -399,7 +422,7 @@ Example:
                     }
                 },*/
                 handleJsPlumbLoaded: function (event) {
-                    var canvas = this.querySelector('sweva-canvas');
+                    var canvas = this.$$('sweva-canvas');
                     if (canvas) {
                         canvas.jsPlumbInstance = event.detail;
                     }
@@ -413,7 +436,7 @@ Example:
                         return;
                     }
 
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
 
                     switch (mode) {
                         case 'importNodeJson':
@@ -463,13 +486,13 @@ Example:
 
                 },
                 cleanUp: function () {
-                    var cursorAwareness = this.querySelector('sweva-cursor-awareness');
+                    var cursorAwareness = this.$$('sweva-cursor-awareness');
                     cursorAwareness.cleanUp();
-                    var userManager = this.querySelector('sweva-user-manager');
+                    var userManager = this.$$('sweva-user-manager');
                     userManager.cleanUp();
-                    var userChat = this.querySelector('sweva-chat');
+                    var userChat = this.$$('sweva-chat');
                     userChat.cleanUp();
-                    var nodeManager = this.querySelector('sweva-node-manager');
+                    var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.cleanUp();
                     this.yjs = null;
                 },
@@ -485,7 +508,7 @@ Example:
                         var panel = self.querySelector('sweva-panel');
                         panel.updateProgress(progress);
                     });*/
-                    var panel = this.querySelector('sweva-panel');
+                    var panel = this.$$('sweva-panel');
                     //panel.updateRoom(room);
                     Y({
                         db: {
@@ -493,11 +516,11 @@ Example:
                         },
                         connector: {
                             name: 'websockets-client',
-                            room: room
+                            room: room,
                             // debug: true,
-                            // url: 'http://127.0.0.1:2345'
+                            url: self.yjsServer
                         },
-                        sourceDir: /*'',//*/'http://127.0.0.1:8021/yjs/bower_components',
+                        
                         share: {
                             //nodes: 'Map',
                             nodes: 'Map',
@@ -514,15 +537,17 @@ Example:
                         var yjs = y;
 
                         //yjs.share.text.bind(document.querySelector("#editor-dialog #editor"))
-                        var userManager = self.querySelector('sweva-user-manager');
+                        var userManager = self.$$('sweva-user-manager');
                         userManager.init(yjs);
-                        var userChat = self.querySelector('sweva-chat');
+                        var userChat = self.$$('sweva-chat');
                         userChat.init(yjs);
-                        var nodeManager = self.querySelector('sweva-node-manager');
+                        var nodeManager = self.$$('sweva-node-manager');
                         nodeManager.init(yjs);
-                        var editor = self.querySelector('#editor-dialog');
+                        var editor = self.$$('#editor-dialog');
                         editor.init(yjs);
 
+                        var canvas = self.$$('#canvas-container');
+                        canvas.pan(2, 2);
 
                         yjs.share.project.observe(function (events) {
                             var code = yjs.share.project.get('code') || '';

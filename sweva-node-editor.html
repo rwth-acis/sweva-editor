@@ -12,7 +12,7 @@
         background-color: #ff614b;            
     }
 </style>
-<dom-module id="sweva-code">
+<dom-module id="sweva-node-editor">
     <template>
         <style>
             :host {
@@ -63,6 +63,7 @@
                     <div id="editor"></div>
                 </div>
                 <div class="buttons">
+                    <paper-button on-click="handleRestore">Restore</paper-button>
                     <paper-button dialog-dismiss>Cancel</paper-button>
                     <paper-button on-click="handleAccept">Accept</paper-button>
                 </div>
@@ -84,7 +85,7 @@
             'use strict';
 
             Polymer({
-                is: 'sweva-code',
+                is: 'sweva-node-editor',
                 properties: {
                     code: {
                         type: String,
@@ -124,30 +125,18 @@
                 ready: function () {
                    
                 },
-                open: function (title, id, code) {
+                open: function (title) {
                     this.title = title;
-                    this.currentId = id;
-                    this.editor.$blockScrolling = Infinity;
-                    this.editor.setValue('', 1);
-                    if (code && code.length > 0) {
-                        this.editor.setValue(code, 1);
-                    }
                     var self = this;
-                    /*
-                    this.yjs.share.nodes.get(id).then(function (map) {
-                        map.get('sharedCode'+id).then(function (text) {
-                            console.log('pre-open', text)
-                            text.unbindAce();
-                            text.bind(self.editor);
-                            
-                        });
-                    });
-                    */
-                    
-
                     this.$$('paper-dialog').open();
                     this.isOpen = true;
+                    this.editor.resize();
+                    
                     this.editor.focus();
+                    setTimeout(function () {
+                        self.editor.resize();
+                    }, 200);
+                    
                 },
                 handleAccept: function () {
                     var code = this.editor.getValue();
@@ -170,7 +159,11 @@
                             dialog.close();
                         }
                     }
+                    this.node.updateCode(code);
                     this.fire('edited', { id: this.currentId, code: code });
+                },
+                handleRestore: function () {
+                    this.editor.setValue(this.node.code, 1);
                 },
                 syntaxCheck: function (code){
                     code = 'function a(){return ' + code + '}';
@@ -203,44 +196,24 @@
                     var errors = this.syntaxCheck(code);
                     this.editor.getSession().setAnnotations(errors);
                 },
-                init: function(yjs){
+                init: function (yjs, node) {
+
+                    this.node = node;
                     this.yjs = yjs;
-                },
-                update: function (yjs, code) {
 
-                    //var self = this;
-                    //self.yjs = yjs;
-
-                    /*
-                    if (self.oldNode) {
-                        var oldId = self.oldNode.id;
-                        self.yjs.share.nodes.get(oldId).then(function (map) {
-                            map.get('sharedCode').then(function (text) {
-                                text.textfields = [];
-                                self.yjs.share.nodes.get(node.id).then(function (map) {
-                                    map.get('sharedCode').then(function (text) {
-                                        text.bind(document.querySelector("#editor-dialog #editor"));
-                                        //text.insert(0, node.code);
-                                    });
-                                });
-                            });
-                        });
+                    if(!this.initialized && this.editor){             
+                        
+                        this.node.sharedCode.bind(this.editor);
+                        this.initialized = true;
                     }
-                    else {
-                        self.yjs.share.nodes.get(node.id).then(function (map) {
-                            map.get('sharedCode').then(function (text) {
-                                text.bind(document.querySelector("#editor-dialog #editor"));
-                                //text.insert(0, node.code);
-                            });
-                        });
-                    }*/
-                    //self.oldNode = node;
                 },
+               
                 attached: function () {
-                    this.editor = ace.edit("editor");
+                    var editor = this.$.editor;
+                    this.editor = ace.edit(editor);
                     this.editor.$blockScrolling = Infinity;
                    
-                    //editor.session.$worker.call("changeOptions", [{ asi: true }])
+                  
 
                     //editor.setTheme("ace/theme/monokai");
                     this.editor.getSession().setMode("ace/mode/javascript");
@@ -259,37 +232,14 @@
                     var dialog = this.$$('paper-dialog.main');
                     dialog.addEventListener('iron-overlay-closed', function (customEvent) {
                         self.isOpen = false;
-                       /*
-                        self.yjs.share.nodes.get(self.currentId).then(function (map) {
-                            map.get('sharedCode' + self.currentId).then(function (text) {
-                                console.log('post-open', text.toString())
-                                text.unbindAce();
-                            });
-                        });*/
-                        
+                        self.editor.resize();
                     });
 
-                   /* this.timer = setInterval(function () {
-                        if (self.isOpen) {
-                            self.findErrors();
-                        }
-                    }, 3000);
-                    /*var configs = {
-                        formats: ['bold', 'italic', 'color'],
-                        styles: {
-                            '.ql-editor': {
-                                'font-family': "monospace"
-                            }
-                        },
-                        theme: 'snow'
-                    };
-                    this.editor = new Quill('#editor', configs);
+                    if (!this.initialized && this.node) {
 
-                    var field = this.querySelector('#editor .ql-editor');
-                    field.spellcheck = false;
-                    field.focus();
-                    field.blur();*/
-                    //editor.addModule('toolbar', { container: '#toolbar' });
+                        this.node.sharedCode.bind(this.editor);
+                        this.initialized = true;
+                    }
                 }
             });
         })();

@@ -131,7 +131,7 @@
                         posY = this.viewport.bottom - this.offsetHeight;
                         outside = true;
                     }
-                    var container = this.querySelector('#cursor-container');
+                    var container = this.$$('#cursor-container');
                    
                     if (outside) {
                         this.moveTo(posX, posY);
@@ -186,12 +186,12 @@
                         this.color = color;
                     }
 
-                    var path = this.querySelector('path');
+                    var path = this.$$('path');
                     if (path) {
                         path.style.fill = color;
                     }
 
-                    var label = this.querySelector('.name-label');
+                    var label = this.$$('.name-label');
                     if (label) {
                         label.style.backgroundColor = color;
                     }

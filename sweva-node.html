@@ -1,6 +1,7 @@
 ﻿<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
 <link rel="import" href="../marked-element/marked-element.html">
+<link rel="import" href="sweva-node-editor.html">
 <dom-module id="sweva-node">
     <template>
         <style>
@@ -83,6 +84,7 @@
                 <div class="markdown-html"></div>
             </marked-element>
         </paper-tooltip>
+       
         <div class="inner">
             <div class$="{{isFixedClass(fixed)}}">
             fixed
@@ -191,7 +193,7 @@
                     
                 },
                 attached: function () {
-                    this.querySelector('.alias').addEventListener("blur", this._handleAliasChanged.bind(this), false);
+                    this.$$('.alias').addEventListener("blur", this._handleAliasChanged.bind(this), false);
                     
                 },
                 selectBy: function (userId, color) {
@@ -201,6 +203,12 @@
                 unselect: function () {
                     this.selectedBy = '';
                     this.style.border = '';
+                },
+                edit: function(){
+                    document.getElementById(this.id+'editor').open('Edit Node ' + this.alias);
+                },
+                handleEditComplete: function (){
+
                 },
                 addConnection: function (sourceEndpointId, targetId, targetEndpointId, fromYjs) {
                    
@@ -367,7 +375,7 @@
                     while (current.parentNode && current.tagName != 'SWEVA-NODE') {
                         current = current.parentNode;
                     }
-                    var tooltip = this.querySelector('.endpoint-tooltip');
+                    var tooltip = this.$$('.endpoint-tooltip');
                     setTimeout(function () {
                         tooltip.hide();
                     }, 100);
@@ -423,7 +431,7 @@
                     }
 
                     
-                    var aliasField = this.querySelector('.alias');
+                    var aliasField = this.$$('.alias');
 
                     aliasField.contentEditable = 'true';
                     aliasField.focus();
@@ -554,7 +562,20 @@
                         this._addEndpoints(['IN1'], ['OUT1'], ['INPUT1']);
                     }
                     else {
-                        var obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(code));
+
+                        var obj;
+                        try {
+                            obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(code));
+                        }
+                        catch (e) {
+                            
+                            obj = {
+                                dataInNames: [],
+                                dataOutNames: [],
+                                inputNames: []
+                            }
+                        }
+                       
                         this.name = obj.name || 'Node';
                         this.description = obj.description || this.name;
                         this._addEndpoints(obj.dataInNames, obj.dataOutNames, obj.inputNames, obj.dataInSchema, obj.dataOutSchema, obj.inputSchema);
@@ -571,15 +592,27 @@
                             map.set('alias', alias);
                             map.set('code', code);
                             map.set('fixed', self.fixed);
-                            /*map.set('sharedCode', Y.Ace).then(function (text) {
+                            map.set('sharedCode' + self.id, Y.Text).then(function (text) {
 
-                                text.insert(0, code);
-
-                            });*/
-
+                                self.sharedCode = text;
+                                text.insert(0, code);                               
+                                self.fire('nodecreated', self);
+                            });
+                            
+                            
                         });
                         this.updatePos();
 
+                    }
+                    else {
+                        
+                        self.yjs.share.nodes.get(self.id).then(function (map) {
+                            map.get('sharedCode' + self.id).then(function (text) {
+                                self.sharedCode = text;
+                                self.fire('nodecreated', self);                                
+                            });
+                        });
+                        
                     }
                     
                     jsPlumbInstance.draggable(this, {
@@ -658,6 +691,11 @@
 
                 _addEndpoints: function (dataIn, dataOut,  input, dataInSchema, dataOutSchema, inputSchema) {
 
+                    if (typeof dataIn === 'undefined'
+                        || typeof dataOut === 'undefined'
+                        || typeof input === 'undefined') {
+                        return;
+                    }
                     this._adjustHeight(input.length, Math.max(dataIn.length, dataOut.length));
 
                     var nodeId = this.id;
@@ -696,7 +734,7 @@
                                 ],
                                 events: {
                                     mouseover: function (c) {
-                                        var tooltip = self.querySelector('.endpoint-tooltip');
+                                        var tooltip = self.$$('.endpoint-tooltip');
 
                                         if (c.tooltip && c.tooltip.length > 0) {
                                             self.tooltip = c.tooltip;
@@ -707,7 +745,7 @@
 
                                     },
                                     mouseout: function (c) {
-                                        var tooltip = self.querySelector('.endpoint-tooltip');
+                                        var tooltip = self.$$('.endpoint-tooltip');
 
                                         tooltip.hide();
                                     }
@@ -752,7 +790,7 @@
                                 ],
                                 events: {
                                     mouseover: function (c) {
-                                        var tooltip = self.querySelector('.endpoint-tooltip');
+                                        var tooltip = self.$$('.endpoint-tooltip');
 
                                         if (c.tooltip && c.tooltip.length > 0) {
                                             self.tooltip = c.tooltip;
@@ -763,7 +801,7 @@
 
                                     },
                                     mouseout: function (c) {
-                                        var tooltip = self.querySelector('.endpoint-tooltip');
+                                        var tooltip = self.$$('.endpoint-tooltip');
                                         tooltip.hide();
                                     }
                                 }
@@ -805,7 +843,7 @@
                                 ],
                                 events: {
                                     mouseover: function (c) {
-                                        var tooltip = self.querySelector('.endpoint-tooltip');
+                                        var tooltip = self.$$('.endpoint-tooltip');
 
                                         if (c.tooltip && c.tooltip.length > 0) {
                                             self.tooltip = c.tooltip;
@@ -816,7 +854,7 @@
 
                                     },
                                     mouseout: function (c) {
-                                        var tooltip = self.querySelector('.endpoint-tooltip');
+                                        var tooltip = self.$$('.endpoint-tooltip');
                                         tooltip.hide();
                                     }
                                 }
@@ -843,7 +881,14 @@
 
                 },
                 toJSON: function () {
-                    var obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(this.code));
+                    var obj;
+                    try {
+                        obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(this.code));
+                    }
+                    catch (e) {
+                        obj = {}
+                    }
+                    
                     return JSON.stringify(obj, null, 4);
                 },
                 updateCode: function (code, fromYjs) {
@@ -862,13 +907,37 @@
                             }
                         }
 
-                        var obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(this.code));
+                        var obj;
+                        try {
+                            obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(this.code));
+                        }
+                        catch (e) {
+                            obj = {
+                                name: 'name',
+                                dataInNames: [],
+                                dataOutNames: [],
+                                inputNames: []
+                            }
+                        }
                         this.name = obj.name;
 
                         if (this.jsPlumbInstance && obj.dataInNames && obj.dataOutNames && obj.inputNames) {
 
                             if (oldCode && oldCode.length > 0) {
-                                var oldObj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(oldCode));
+
+                                var oldObj;
+                                try {
+                                    oldObj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(oldCode));
+                                }
+                                catch (e) {
+                                    oldObj = {
+                                        dataInNames: [],
+                                        dataOutNames: [],
+                                        inputNames: []
+
+                                    }
+                                }
+                               
 
                                 if (obj.dataInNames.length == oldObj.dataInNames.length
                                     && obj.dataOutNames.length == oldObj.dataOutNames.length
@@ -937,11 +1006,16 @@
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
                         if (this.yjs) {
                             var self = this;
-                            this.yjs.share.nodes.get(this.id).then(function (map) {
+                            var get = this.yjs.share.nodes.get(this.id);
 
-                                map.set('position', { x: self.posX, y: self.posY });
+                            if (get) {
+                                get.then(function (map) {
 
-                            });
+                                    map.set('position', { x: self.posX, y: self.posY });
+
+                                });
+                            }
+                           
                         }
                     }
                 },
