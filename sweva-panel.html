@@ -253,6 +253,10 @@
                             <iron-icon item-icon icon="icons:code"></iron-icon>
                             <div class="text">Edit Code</div>
                         </paper-icon-item>
+                        <paper-icon-item on-click="handleNodeClone">
+                            <iron-icon item-icon icon="icons:content-copy"></iron-icon>
+                            <div class="text">Clone</div>
+                        </paper-icon-item>
                     </div>
                 </paper-card>
                 <paper-card heading="Edit Project">
@@ -456,6 +460,9 @@
                 },
                 handleNodeEdit: function () {
                     this.fire('editnode', this.selectedNode);
+                },
+                handleNodeClone: function () {
+                    this.fire('clonenode', this.selectedNode);
                 },
                 handleNodeUpdate: function () {
 

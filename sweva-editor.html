@@ -91,7 +91,9 @@ Example:
                                 on-nodecreated="handleNodeCreated"
                                 on-nodeselected="handleNodeSelection"
                                 on-editnode="handleEditNode"
+                                on-clonenode="handleCloneNode"
                                 on-deletenode="handleDeleteNode"
+                                on-repositorybrowse="handleRepositoryBrowse"
                                 repository-url-prefix="{{repositoryUrlPrefix}}"
                                 repository-url-suffix="{{repositoryUrlSuffix}}">
             </sweva-node-manager>
@@ -105,6 +107,7 @@ Example:
                      on-clearall="handleClearAll"
                      on-imported="handleImported"
                      on-editnode="handleEditNode"
+                     on-clonenode="handleCloneNode"
                      on-editproject="handleEditProject"
                      on-execute="handleExecute"
                      on-downloadproject="handleDownloadProject"
@@ -123,6 +126,8 @@ Example:
         <div id="editors">
 
         </div>
+
+        <sweva-repository-browser id="repository-browser" repository-url="{{repositoryUrlPrefix}}"></sweva-repository-browser>
     </template>
 
     <script src="../yjs/y.js"></script>
@@ -209,6 +214,10 @@ Example:
                 _roomChanged: function () {
                     this.start(this.room)
                 },
+                handleRepositoryBrowse: function (event) {
+                    var repo = this.$$('#repository-browser');
+                    repo.open(event.detail);
+                },
                 handleCollapsed: function(event) {
                     var chat = this.$$('sweva-chat');
                     chat.collapsed = (event.detail);
@@ -288,6 +297,14 @@ Example:
                 handleClearAll: function (event) {
                     var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.clear();
+
+                    var children = Polymer.dom(this.$.editors).children;
+                    for (var i = 0; i < children.length; i++) {
+                        var child = children[i];
+                        Polymer.dom(this.$.editors).removeChild(child);
+                    }
+                    Polymer.dom.flush();
+                   
                 },
                 handleDownloadProject: function () {
                     var nodeManager = this.$$('sweva-node-manager');
@@ -316,6 +333,14 @@ Example:
                 handleDeleteNode: function (event) {
                     var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.deleteNode(event.detail);
+
+                    var editor = document.getElementById(event.detail.id+'editor');
+                    if (editor) {
+                        Polymer.dom(this.$.editors).removeChild(editor);
+                        Polymer.dom.flush();
+                    }
+                   
+                   
                 },
                 handleEditProject: function () {
                     var editor = this.$$('#editor-dialog');
@@ -379,6 +404,18 @@ Example:
                             editor.open('Edit Node ' + node.alias, node.id, node.code);
 
                         }*/
+                    }
+
+                },
+                handleCloneNode: function (event) {
+                    var node = event.detail;
+
+                    if (node) {
+                        var nodeManager = this.querySelector('sweva-node-manager');
+                        if (nodeManager) {
+                            nodeManager.cloneNode(node);
+                        }
+                       
                     }
 
                 },

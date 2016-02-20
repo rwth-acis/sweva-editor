@@ -16,18 +16,21 @@
                 border-radius: 10px;
                 cursor: pointer;
                 box-sizing: border-box;
-               
+                z-index: 5;
+                padding: 10px;
             }
 
             .inner {
-                width: 100%;
                 height: 100%;
+                width: 100%;
                 text-align: center;
                 color: #ffffff;
-                padding: 5px;
+               
+                overflow: auto;
                 word-break: break-all;
                 display: initial;
-                overflow: hidden;
+                font-size: 14px;
+               
             }
             .alias {
                 outline-color: white;
@@ -386,6 +389,9 @@
                     if (action == 'edit') {
                         this.fire('editnode',this)
                     }
+                    else if (action == 'clone') {
+                        this.fire('clonenode', this)
+                    }
                     else if (action == 'delete') {
                         this.fire('deletenode',this)
                     }
@@ -402,6 +408,7 @@
 
                     var items = [
                         { title: 'Edit', fn: current.contextMenu.bind(current, 'edit') },
+                        { title: 'Clone', fn: current.contextMenu.bind(current, 'clone') },
                         {},
                         { title: 'Delete', fn: current.contextMenu.bind(current, 'delete') }
                     ];
@@ -522,6 +529,7 @@
                         hoverPaintStyle: nodeEndpointHoverStyle,
                         connectorHoverStyle: nodeConnectorHoverStyle,
                         dragOptions: {},
+                        maxConnections: -1,
 
                     }
                     this.jsPlumbStyles.nodeInputEndpoint = nodeInputEndpoint;

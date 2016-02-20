@@ -166,19 +166,25 @@
                         }
                         var alias = nodeDictionary[edge.from].alias;
                         if (!composition.links.hasOwnProperty(alias)) {
-                            composition.links[alias] = [];
+                            composition.links[alias] = {};
                         }
-                       
+                        
+                        if(!composition.links[alias].hasOwnProperty(edge.fromEndpoint)){
+                            composition.links[alias][edge.fromEndpoint] = {};
+                        }
+
                         var to = nodeDictionary[edge.to].alias;
-                        var mapping = {};
+                        composition.links[alias][edge.fromEndpoint][to] = edge.toEndpoint;
+                        
+                        /*var mapping = {};
                         mapping[edge.fromEndpoint] = edge.toEndpoint;
                         var toMap = {
                             to: to,
                             mapping: mapping
-                        };
+                        };*/
                         nodesWithConnections[alias] = true;
                         nodesWithConnections[to] = true;
-                        composition.links[alias].push(toMap);
+                        //composition.links[alias].push(toMap);
                     }
 
                     /*for (var key in composition.composables) {
@@ -301,6 +307,9 @@
                         container.clear();
                     }
                 },
+                cloneNode: function(node) {
+                    this.createNode({ alias: node.alias+'-C', code: node.code });
+                },
                 importNodeJson: function (alias, content) {
                     var json = JSON.parse(content);
                     var code = sweva.ComposableLoader.convertJsonToCode(json);
@@ -340,45 +349,30 @@
                         }
 
                         if (obj.links) {
-                            for (var key in obj.links) {
-                                if (obj.links.hasOwnProperty(key)) {
-                                    var links = obj.links[key];
-                                    var from = key;
+                            for (var fromNode in obj.links) {
+                                if (obj.links.hasOwnProperty(fromNode)) {
+                                    var nodeLinks = obj.links[fromNode];
+                                    
 
-                                    for (var i = 0; i < links.length; i++) {
-                                        var link = links[i];
+                                    for (var fromEndpoint in nodeLinks) {
+                                        if (nodeLinks.hasOwnProperty(fromEndpoint)) {
+                                            var endpointLinks = nodeLinks[fromEndpoint];
+                                            
+                                            for (var toNode in endpointLinks) {
+                                                if (endpointLinks.hasOwnProperty(toNode)) {
+                                                    var toEndpoint = endpointLinks[toNode];
 
-                                        var to = link.to;
-                                        var fromEndpoint = '';
-                                        var toEndpoint = '';
-                                        if (link.hasOwnProperty('mapping')) {
-                                            if (typeof link.mapping === 'string') {
-                                                fromEndpoint = '';
-                                                toEndpoint = link.mapping;
-                                            }
-                                            else {
-                                                var oKeys = Object.keys(link.mapping);
-                                                for (var k = 0; k < oKeys.length; k++) {
-                                                    fromEndpoint = oKeys[k];
-                                                    toEndpoint = link.mapping[oKeys[k]];
+                                                    if (nodeDictionary[fromNode] && nodeDictionary[toNode]) {
+                                                        var fromEndpointOut = nodeDictionary[fromNode].id + fromEndpoint + 'out';
+                                                        var toEndpointIn = nodeDictionary[toNode].id + toEndpoint + 'in';
+                                                        nodeDictionary[fromNode].addConnection(fromEndpointOut, nodeDictionary[toNode].id, toEndpointIn);
+                                                    }
                                                 }
                                             }
                                         }
-                                        else {
-                                            fromEndpoint = '';
-                                            toEndpoint = '';
-                                        }
-                                        //console.log(from, fromEndpoint, to, toEndpoint);
-                                        if (nodeDictionary[from] && nodeDictionary[to]) {
-                                            if (fromEndpoint) {
-                                                fromEndpoint = nodeDictionary[from].id + fromEndpoint + 'out';
-                                            }
-                                            if (toEndpoint) {
-                                                toEndpoint = nodeDictionary[to].id + toEndpoint + 'in';
-                                            }
-                                            nodeDictionary[from].addConnection(fromEndpoint, nodeDictionary[to].id, toEndpoint);
-                                        }
                                     }
+
+                                   
                                     
                                 }
                             }

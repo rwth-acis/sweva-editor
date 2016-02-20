@@ -1,6 +1,7 @@
 ﻿<link rel="import" href="../polymer/polymer.html">
 
 <link rel="import" href="sweva-input-container.html">
+<link rel="import" href="sweva-repository-browser.html">
 
 <link rel="import" href="../iron-icons/iron-icons.html">
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
@@ -44,16 +45,22 @@
                 height: 70px;
                 margin: 20px;
             }
-
+            #visualization-select {
+                display: flex;
+                color: #fff;
+                align-content:center;
+            }
+            #visualization-select paper-icon-button {
+                width: 40px;
+                height: 40px;
+            }
             #visualization-url {
                 --paper-input-container-color: #fff;
                 --paper-input-container-input-color: #fff;
                 --paper-input-container-focus-color: #111;
                 margin: -10px 10px 0 10px;
-              
+                flex: 1;
             }
-
-               
         </style>
         <div id="header">
             Input Mapping
@@ -65,7 +72,10 @@
                                on-click="handleMinimize">
             </paper-icon-button>
         </div>
-        <paper-input id="visualization-url" label="Visualization Tool" value="{{visualizationUrl}}" on-change="handleVisualizationChanged"></paper-input>
+        <div id="visualization-select">
+            <paper-input id="visualization-url" label="Visualization Tool" value="{{visualizationUrl}}" on-change="handleVisualizationChanged"></paper-input>
+            <paper-icon-button title="Browse Visualizations" icon="icons:extension" on-click="handleVisualizationBrowse"></paper-icon-button>
+        </div>
         <div id="content">
 
             <div id="container">
@@ -78,6 +88,7 @@
                 </paper-icon-button>
             </template>
         </div>
+        
     </template>
     <script>
         (function () {
@@ -135,17 +146,16 @@
                             var previousIndex = 0;
                             for (var i = 0; i < children.length; i++) {
                                 var element = children[i];
-                                if (element.index == options.index) {
+                                if (element.indexPos == options.index) {
                                     var nextSibling = Polymer.dom(element).nextSibling;
                                     if (nextSibling) {
                                         inserted = true;
-                                        inputContainer.index = element.index + (nextSibling.index - element.index) / 2.0;
+                                        inputContainer.indexPos = element.indexPos + (nextSibling.indexPos - element.indexPos) / 2.0;
 
                                         Polymer.dom(parent).appendChild(inputContainer);
                                     }
                                 }
 
-                               
                             }
 
                         }
@@ -157,15 +167,14 @@
                         var highestIndex = 0;
                         for (var i = 0; i < children.length; i++) {
                             var element = children[i];
-                            if (highestIndex < element.index) {
-                                highestIndex = element.index;
+                            if (highestIndex < element.indexPos) {
+                                highestIndex = element.indexPos;
                             }
                         }
-                        inputContainer.index = highestIndex + 1;
+                        inputContainer.indexPos = highestIndex + 1;
                         Polymer.dom(parent).appendChild(inputContainer);
                     }
 
-                    
                     this.updateDOM();
 
                     if (typeof options === 'object') {
@@ -183,9 +192,9 @@
                     inputContainer.addEventListener('indexchangedyjs', this.updateDOM.bind(this), false);
 
                     if (typeof options === 'object') {
-                        if (typeof options.index === 'number') {
-                            delete options.index;
-                        }
+                        /* if (typeof options.index === 'number') {
+                             delete options.index;
+                         }*/
                         inputContainer.update(options);
                     }
                     if (this.showAdd) {
@@ -200,6 +209,7 @@
                     return inputContainer;
                 },
                 updateDOM: function () {
+
                     var parent = this.$.container;
                     var children = Polymer.dom(parent).children;
 
@@ -207,13 +217,13 @@
 
                     for (var i = 0; i < children.length; i++) {
                         var element = children[i];
-                        
+
                         copy.push(element);
                         Polymer.dom(parent).removeChild(element);
                     }
 
-                    copy.sort(function (a, b) { return a.index - b.index; });
-                   
+                    copy.sort(function (a, b) { return a.indexPos - b.indexPos; });
+
                     //console.log(children);
                     for (var i = 0; i < copy.length; i++) {
                         var element = copy[i];
@@ -259,7 +269,6 @@
 
                     });
 
-                   
                     this.yjs.share.mapperVisualization.observe(function (events) {
                         var url = self.yjs.share.mapperVisualization.get('url');
                         if (url != null && self.visualizationUrl != url) {
@@ -271,11 +280,12 @@
                         for (var i = 0; i < events.length; i++) {
                             var event = events[i];
                             (function (event) {
+
                                 if (event.type === 'add') {
                                     try {
                                         self.yjs.share.mapperContainers.get(event.name).then(function (map) {
 
-                                            var index = map.get('index') || '';
+                                            var index = map.get('index') || -1;
                                             var type = map.get('type') || '';
                                             var label = map.get('label') || '';
                                             var stringvalue = map.get('stringvalue') || '';
@@ -286,10 +296,10 @@
                                             var max = map.get('max') || '';
                                             var items = map.get('items') || '';
                                             var description = map.get('description') || '';
-                                            var container = document.getElementById(event.name);
-                                           
-                                            if (!container) {
 
+                                            var container = document.getElementById(event.name);
+
+                                            if (!container) {
                                                 container = self.add({
                                                     id: event.name,
                                                     type: type,
@@ -358,7 +368,14 @@
                     });
 
                 },
-                handleVisualizationChanged: function(event){
+                handleVisualizationChanged: function (event) {
+                    this.yjs.share.mapperVisualization.set('url', this.visualizationUrl);
+                },
+                handleVisualizationBrowse: function (event) {
+                    this.fire('repositorybrowse', { category: 'visualizations', callback: this.setVisualizationUrl.bind(this) });
+                },
+                setVisualizationUrl: function(url){
+                    this.visualizationUrl = url;
                     this.yjs.share.mapperVisualization.set('url', this.visualizationUrl);
                 },
                 setVisualization: function (visualization) {
@@ -415,8 +432,8 @@
                                 if (i <= 0) {
                                     return; //ignore leftmost tem
                                 }
-                                var temp = children[i].index;
-                                children[i].updateIndex(children[i - 1].index);
+                                var temp = children[i].indexPos;
+                                children[i].updateIndex(children[i - 1].indexPos);
                                 children[i - 1].updateIndex(temp);
 
                             }
@@ -424,8 +441,8 @@
                                 if (i == children.length - 1) {
                                     return; //ignore rightmost tem
                                 }
-                                var temp = children[i].index;
-                                children[i].updateIndex(children[i + 1].index);
+                                var temp = children[i].indexPos;
+                                children[i].updateIndex(children[i + 1].indexPos);
                                 children[i + 1].updateIndex(temp);
                             }
                             this.updateDOM();
@@ -493,7 +510,7 @@
                 handleContainerAdd: function (event) {
                     var element = event.detail;
 
-                    this.add({ index: element.index });
+                    this.add({ index: element.indexPos });
 
                 },
                 updateWidth: function () {

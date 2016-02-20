@@ -116,6 +116,7 @@
         </style>
 
         <div class="order-switcher">
+            
             <paper-icon-button title="Minimize"
                                icon="icons:check-box-outline-blank"
                                on-click="handleMinimize">
@@ -183,7 +184,7 @@
             Polymer({
                 is: 'sweva-input-container',
                 properties: {
-                    index: {
+                    indexPos: {
                         type: Number,
                         value: 0
                     },
@@ -232,7 +233,7 @@
 
                 },
                 ready: function () {
-                    this.index = Math.random();
+                   
 
                     this.prepareStyles();
                 },
@@ -258,7 +259,7 @@
 
                         self.yjs.share.mapperContainers.set(self.id, Y.Map).then(function (map) {
 
-                            map.set('index', self.index);
+                            map.set('index', self.indexPos);
                             map.set('type', self.$$('#type').value || '');
                             map.set('label', self.$$('#label').value || '');
                             map.set('stringvalue', self.$$('#stringvalue').value || '');
@@ -653,12 +654,12 @@
 
                     var connectorPaintStyle = {
                         lineWidth: 4,
-                        strokeStyle: "#0094ff",
+                        strokeStyle: "#85CCFF",
                         joinstyle: "round",
                         outlineColor: "white",
                         outlineWidth: 2,
                         gradient: {
-                            stops: [[0, "#464646"], [1, "#0094ff"]]
+                            stops: [[0, "#969696"], [1, "#85CCFF"]]
                         }
                     }
                     var connectorHoverStyle = {
@@ -675,7 +676,7 @@
                         endpoint: "Dot",
                         paintStyle: {
                             strokeStyle: "none",
-                            fillStyle: "#464646",
+                            fillStyle: "#969696",
                             radius: 14
 
                         },
@@ -732,10 +733,10 @@
 
                         for (var key in options) {
                             if (options.hasOwnProperty(key)) {
-
+                                
                                 if (key == 'index') {
-                                    if (this.index != options.index) {
-                                        this.index = options.index;
+                                    if (this.indexPos != options.index) {
+                                        this.indexPos = options.index;
                                         this.fire('indexchangedyjs');
                                     }
                                 }
@@ -770,7 +771,7 @@
                                                 break;
                                             case 'dropdown':
                                                 var element = this.$$('#items');
-                                                element.value = options[key];
+                                                element.value = (Array.isArray(options[key])) ? options[key].join(';') : options[key];
                                                 break;
                                             case 'fixed':
                                                 var element = this.$$('#multilinevalue');
@@ -799,7 +800,6 @@
                                 }
                             }
                         }
-
                     }
                 }
             });
