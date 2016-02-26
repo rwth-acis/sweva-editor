@@ -190,14 +190,17 @@
                     <div class="card-content">
                         <paper-input id="create-node-name" label="Alias" value="{{createNodeAlias}}"></paper-input>
                         <paper-input id="create-node-url" label="Url" value="{{createNodeUrl}}"></paper-input>
-
-                        <paper-icon-item on-click="handleCreateNodeUrlFixed">
+                        <paper-icon-item on-click="handleOpenRepository">
+                            <iron-icon item-icon icon="icons:extension"></iron-icon>
+                            <div class="text">Browse Nodes</div>
+                        </paper-icon-item>
+                        <!--<paper-icon-item on-click="handleCreateNodeUrlFixed">
                             <iron-icon item-icon icon="icons:cloud-circle"></iron-icon>
                             <paper-item-body class="text" two-line>
                                 <div>Create From Url</div>
                                 <div secondary>(read-only)</div>
                             </paper-item-body>
-                        </paper-icon-item>
+                        </paper-icon-item>-->
                         <paper-icon-item on-click="handleCreateNode">
                             <iron-icon item-icon icon="icons:cloud-off"></iron-icon>
                             <div class="text">Create Empty</div>
@@ -414,6 +417,9 @@
                         }
                     }
                 },
+                handleOpenRepository: function(){
+                    this.fire('repositorybrowse', { category: 'modules', callback: this.setUrl.bind(this) });
+                },
                 handleSwitchRoom: function () {
                     this.fire('switchroom', this.room);
                 },
@@ -555,6 +561,9 @@
                     }
                     return null;
                            
+                },
+                setUrl: function(url) {
+                    this.createNodeUrl = url;
                 },
                 updateUser: function (data) {
 

@@ -192,9 +192,9 @@
                     inputContainer.addEventListener('indexchangedyjs', this.updateDOM.bind(this), false);
 
                     if (typeof options === 'object') {
-                        /* if (typeof options.index === 'number') {
+                         if (typeof options.index === 'number') {
                              delete options.index;
-                         }*/
+                         }
                         inputContainer.update(options);
                     }
                     if (this.showAdd) {
@@ -445,6 +445,7 @@
                                 children[i].updateIndex(children[i + 1].indexPos);
                                 children[i + 1].updateIndex(temp);
                             }
+                            
                             this.updateDOM();
                             break;
                         }

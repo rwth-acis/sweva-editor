@@ -456,7 +456,7 @@
                                 axios.get(url).then(function (response) {
 
                                     var code = sweva.ComposableLoader.convertJsonToCode(response.data);
-
+                                   
                                     node.init(self.jsPlumbInstance, self.yjs, self.edges, alias, code, fixed, { x: x, y: y });
                                     node.addEventListener('created', self.handleNodeCreated);
                                     node.addEventListener('selected', self.handleNodeSelected);
@@ -464,6 +464,7 @@
                                 })
                             }
                             else {
+                                
                                 node.init(self.jsPlumbInstance, self.yjs, self.edges, options.alias, code, fixed, { x: x, y: y });
                                 node.addEventListener('created', self.handleNodeCreated);
                                 node.addEventListener('selected', self.handleNodeSelected);
@@ -616,7 +617,7 @@
                                 self.jsPlumbInstance.selectEndpoints().each(function (endpoint) {
 
                                     //simple, make it more sophisticated
-                                    if (sourceTooltip.length > 0 && typeof endpoint.tooltip == 'string' && endpoint.tooltip.trim().length > 0) {
+                                    if (sourceTooltip.length > 0 && endpoint.isTarget && typeof endpoint.tooltip == 'string' && endpoint.tooltip.trim().length > 0) {
                                         if (sourceTooltip != endpoint.tooltip.trim()) {
                                             endpoint.setType("invalid");
                                         }
