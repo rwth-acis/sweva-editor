@@ -14,52 +14,41 @@
     <template>
         <style>
             :host {
-                background: #fff;
-                position: relative;
-                border-bottom-left-radius: 10px;
-                border-top-left-radius: 10px;
-                border-bottom-right-radius: 10px;
-                box-shadow: 1px 1px 10px #555;
-                margin-right: 5px;
+                display: block;
+                width: 200px;
+                height: 200px;
+                background: #00a46d;
+                position: absolute;
+                border-radius: 10px;
                 box-sizing: border-box;
-                border-right: 8px solid #fff;
+            }
+
+            .index {
+                line-height: 30px;
+                padding: 0 10px;
+                color: #fff;
             }
 
             .hidden {
                 display: none;
             }
 
-            .order-switcher {
-                background: #464646;
-                height: 20px;
-                width: 100%;
+            #content {
+                background: #fff;
+                overflow-y: auto;
+                overflow-x: hidden;
                 position: absolute;
-                top: -20px;
-                right: -8px;
-                border-top-left-radius: 10px;
-                border-top-right-radius: 10px;
-                display: flex;
-            }
-
-                .order-switcher paper-icon-button {
-                    color: #fff;
-                    flex: 1 1 0;
-                    height: 100%;
-                    padding: 2px;
-                }
-
-            .content {
-                overflow: auto;
-                padding: 6px;
-                position: absolute;
-                top: 0;
-                bottom: 10px;
-                right: 0;
+                top: 30px;
                 left: 0;
-                box-sizing: border-box;
+                bottom: 0;
+                padding: 10px;
+                border: 1px solid;
+                border-top: none;
+                border-bottom-left-radius: 10px;
+                border-bottom-right-radius: 10px;
             }
 
-                .content paper-toggle-button {
+                #content paper-toggle-button {
                     margin-top: 10px;
                 }
 
@@ -98,53 +87,10 @@
                     border-top: 0.35em solid #BDBDBD;
                     pointer-events: none;
                 }
-
-            #minimizedtext {
-                transform: rotate(-90deg);
-                transform-origin: 0% -30%;
-                position: absolute;
-                width: 145px;
-                text-overflow: ellipsis;
-                bottom: 0;
-                display: none;
-                overflow: hidden;
-            }
-
-                #minimizedtext.hidden {
-                    display: block;
-                }
         </style>
+        <div class="index">Index: {{indexPos}}</div>
 
-        <div class="order-switcher">
-            
-            <paper-icon-button title="Minimize"
-                               icon="icons:check-box-outline-blank"
-                               on-click="handleMinimize">
-            </paper-icon-button>
-            <template is="dom-if" if="{{!minimized}}">
-
-                <paper-icon-button title="Add"
-                                   icon="icons:add-circle-outline"
-                                   on-click="handleAdd">
-                </paper-icon-button>
-                <paper-icon-button title="Move Left"
-                                   icon="icons:arrow-back"
-                                   on-click="handleMoveLeft">
-                </paper-icon-button>
-                <paper-icon-button title="Move Right"
-                                   icon="icons:arrow-forward"
-                                   on-click="handleMoveRight">
-                </paper-icon-button>
-                
-            </template>
-            <paper-icon-button title="Close"
-                               icon="icons:close"
-                               on-click="handleClose">
-            </paper-icon-button>
-        </div>
-
-        <div class$="content {{minimizedClass}}">
-
+        <div id="content">
             <div class="material-select">
                 <select id="type">
                     <option value="" disabled selected>Select Type</option>
@@ -159,6 +105,8 @@
                 </select>
             </div>
 
+            <paper-input id="indexPos" type="number" label="Index" value="[[indexPos]]" on-input="handleIndexChanged" data-parent="this"></paper-input>
+
             <paper-input hidden$="{{!showElement('label',type)}}" id="label" label="Label" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
             <paper-input hidden$="{{!showElement('stringvalue',type)}}" id="stringvalue" label="Value" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
             <paper-textarea hidden$="{{!showElement('multilinevalue',type)}}" id="multilinevalue" label="Value" value="" on-input="handleInputChanged" data-parent="this"></paper-textarea>
@@ -169,13 +117,11 @@
             </paper-toggle-button>
             <paper-input hidden$="{{!showElement('min',type)}}" id="min" type="number" label="Min" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
             <paper-input hidden$="{{!showElement('max',type)}}" id="max" type="number" label="Max" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
-            <paper-textarea hidden$="{{!showElement('items',type)}}" id="items" label="Items ; Separated" value="" on-input="handleInputChanged" data-parent="this"></paper-textarea>
-           
+            <paper-textarea hidden$="{{!showElement('items',type)}}" id="items" label="Items , Separated" value="" on-input="handleInputChanged" data-parent="this"></paper-textarea>
+
             <paper-textarea hidden$="{{!showElement('description',type)}}" id="description" label="Description" value="" on-input="handleInputChanged" data-parent="this"></paper-textarea>
         </div>
 
-        <div id="minimizedtext" class$="{{minimizedClass}}">
-        </div>
     </template>
     <script>
         (function () {
@@ -184,6 +130,14 @@
             Polymer({
                 is: 'sweva-input-container',
                 properties: {
+                    posX: {
+                        type: Number,
+                        value: 50
+                    },
+                    posY: {
+                        type: Number,
+                        value: 50
+                    },
                     indexPos: {
                         type: Number,
                         value: 0
@@ -198,12 +152,9 @@
                     },
                     width: {
                         type: Number,
-                        value: 180
+                        value: 200
                     },
-                    minimizedWidth: {
-                        type: Number,
-                        value: 45
-                    },
+
                     jsPlumbStyles: {
                         type: Object,
                         value: {
@@ -218,42 +169,36 @@
                         value: false
 
                     },
-                    minimized: {
-                        type: Boolean,
-                        value: false
-                    },
-                    minimizedClass: {
-                        type: String,
-                        valu: ''
-                    },
                     edges: {
                         type: Object,
                         value: null
+                    },
+                    selectedBy: {
+                        type: String,
+                        value: ''
+                    },
+                    id: {
+                        type: String
                     }
 
                 },
                 ready: function () {
-                   
+
 
                     this.prepareStyles();
                 },
                 attached: function () {
-                    this.addEventListener('mousewheel', function (event) { event.stopPropagation(); }, false);
-
-                    this.$$('#type').addEventListener('change', this.handleTypeChanged.bind(this), false)
+                    this.$.content.addEventListener('mousewheel', function (event) { event.stopPropagation(); }, false);
+                    this.$$('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
+                    this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
                 },
-                init: function (jsPlumb, yjs, edges, id, fromYjs) {
+                init: function (jsPlumbInstance, yjs, edges, id, fromYjs) {
                     this.edges = edges;
                     this.yjs = yjs;
-                    this.jsPlumbInstance = jsPlumb;
+                    this.jsPlumbInstance = jsPlumbInstance;
                     this.style.width = this.width + 'px';
                     this.id = id || this._generateGUID();
-
-                    this.endpoint = this.jsPlumbInstance.addEndpoint(this.id, this.jsPlumbStyles.inputEndpoint, {
-                        anchor: [0.5, 1, 0, 1],
-                        uuid: this.id + 'endpoint'
-
-                    });
+                    Polymer.dom.flush();
                     var self = this;
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
 
@@ -269,11 +214,60 @@
                             map.set('min', self.$$('#min').value || '');
                             map.set('max', self.$$('#max').value || '');
                             map.set('items', self.$$('#items').value || '');
-                            map.set('description', self.$$('#description').value||'');
+                            map.set('description', self.$$('#description').value || '');
+
+                            map.set('position', { x: self.posX, y: self.posY });
 
                         });
 
                     }
+
+
+                    this.jsPlumbInstance.draggable(this, {
+                        stop: function (event) {
+                            self.updatePos(event.el.offsetLeft, event.el.offsetTop);
+                        }
+                    });
+                   
+                    this.updatePos();
+                    this.endpoint = this.jsPlumbInstance.addEndpoint(this.id, this.jsPlumbStyles.inputEndpoint, {
+                        anchor: [1, 0, 1, -1],
+                        uuid: this.id + 'endpoint'
+
+                    });
+                },
+                contextMenu: function (action) {
+
+                    
+                    if (action == 'delete') {
+                        this.remove();
+                    }
+                },
+                handleContextmenu: function() {
+                    var current = event.target;
+                    //get correct position if over children
+                    while (current.parentNode && current.tagName != 'SWEVA-INPUT-CONTAINER') {
+                        current = current.parentNode;
+                    }
+
+
+
+                    var items = [                       
+                        { title: 'Delete', fn: current.contextMenu.bind(current, 'delete') }
+                    ];
+
+                    basicContext.show(items, event);
+                    event.preventDefault();
+                },
+
+                remove: function (fromYjs) {
+                    this.clearConnections();
+                    this.jsPlumbInstance.remove(this.id);
+
+                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                        this.yjs.share.mapperContainers.delete(this.id);
+                    }
+
                 },
                 clear: function () {
                     this.clearConnections();
@@ -468,10 +462,11 @@
                             break;
                         case 'dropdown':
                             result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;
-                            result.items = this.$$('#items').value.split(';');
+                            result.description = this.$$('#description').value;       
+                            var items = this.$$('#items');
+                            result.items = (typeof items.value === 'string') ? items.value.split(',') : items.value;
                             break;
-                        case 'fixed':                            
+                        case 'fixed':
                             result.description = this.$$('#description').value;
                             result.value = this.$$('#multilinevalue').value;
                             break;
@@ -504,34 +499,7 @@
 
                     return result;
                 },
-                handleMinimize: function () {
 
-                    this.minimize(!this.minimized);
-                    this.fire('minimized', this);
-                },
-                minimize: function (status) {
-                    if (this.minimized == status) {
-                        return;
-                    }
-                    this.minimized = status;
-
-                    if (this.minimized) {
-
-                        this.style.width = this.minimizedWidth + 'px';
-                        this.minimizedClass = 'hidden';
-
-                        var label = this.$$('#label');
-                        if (label) {
-                            this.$$('#minimizedtext').innerHTML = label.value;
-                        }
-
-                    }
-                    else {
-
-                        this.style.width = this.width + 'px';
-                        this.minimizedClass = '';
-                    }
-                },
                 toggleButtonValueChanged: function (event) {
                     if (event.target) {
                         this.toggleButtonValue = event.target.checked;
@@ -551,33 +519,32 @@
 
                     switch (this.type) {
                         case 'header':
-                            this.style.backgroundColor = '#F7DCDC';
-                            this.style.borderRight = '8px solid #f00';
+                            this.style.backgroundColor = '#f00';
                             break;
                         case 'text':
-                            this.style.borderRight = '8px solid #00802b';
+                            this.style.backgroundColor = '#00802b';
                             break;
                         case 'multiline':
-                            this.style.borderRight = '8px solid #00802b';
+                            this.style.backgroundColor = '#00802b';
                             break;
                         case 'number':
-                            this.style.borderRight = '8px solid #007fff';
+                            this.style.backgroundColor = '#007fff';
                             break;
                         case 'slider':
-                            this.style.borderRight = '8px solid #000596';
+                            this.style.backgroundColor = '#000596';
                             break;
                         case 'toggle':
-                            this.style.borderRight = '8px solid #666';
+                            this.style.backgroundColor = '#666';
                             break;
                         case 'dropdown':
-                            this.style.borderRight = '8px solid #ff00bf';
+                            this.style.backgroundColor = '#ff00bf';
                             break;
                         case 'fixed':
-                            this.style.borderRight = '8px solid #111';
+                            this.style.backgroundColor = '#111';
                             break;
 
                         default:
-                            this.style.borderRight = '';
+
                     }
                     if (typeof fromYjs === 'undefined' || !fromYjs) {
                         this.updateYjs(element);
@@ -608,19 +575,14 @@
                             return false;
                     }
                 },
-                handleMoveLeft: function () {
-                    this.fire('moveleft', this);
-                },
-                handleMoveRight: function () {
-                    this.fire('moveright', this);
-                },
-                handleClose: function () {
-                    this.fire('close', this);
-                },
-                handleAdd: function () {
-                    this.fire('add', this);
-                },
 
+                handleIndexChanged: function (event) {
+                    this.indexPos = event.target.value;
+                    var self = this;
+                    self.yjs.share.mapperContainers.get(self.id).then(function (map) {
+                        map.set('index', self.indexPos);
+                    });
+                },
                 handleInputChanged: function (event) {
                     if (event.target == null) {
                         return;
@@ -654,29 +616,25 @@
 
                     var connectorPaintStyle = {
                         lineWidth: 4,
-                        strokeStyle: "#85CCFF",
+                        strokeStyle: "#333",
                         joinstyle: "round",
                         outlineColor: "white",
                         outlineWidth: 2,
-                        gradient: {
-                            stops: [[0, "#969696"], [1, "#85CCFF"]]
-                        }
+                        dashstyle: '1'
                     }
                     var connectorHoverStyle = {
                         lineWidth: 4,
                         strokeStyle: "#00cc00",
                         outlineWidth: 2,
                         outlineColor: "#00cc00",
-                        gradient: {
-                            stops: [[0, "#00cc00"], [1, "#00cc00"]]
-                        }
+                        dashstyle: '0'
                     }
 
                     var inputEndpoint = {
-                        endpoint: "Dot",
+                        endpoint: "Rectangle",
                         paintStyle: {
                             strokeStyle: "none",
-                            fillStyle: "#969696",
+                            fillStyle: "#333",
                             radius: 14
 
                         },
@@ -692,6 +650,15 @@
                     }
 
                     this.jsPlumbStyles.inputEndpoint = inputEndpoint;
+                },
+                repaint: function () {
+                    try {
+                        this.jsPlumbInstance.repaint(this, { left: this.posX, top: this.posY });
+                    }
+                    catch (e) {
+
+                    }
+
                 },
                 updateYjs: function (element) {
 
@@ -728,16 +695,15 @@
                     }
                 },
                 update: function (options, fromYjs) {
-                   
+
                     if (typeof options === 'object') {
 
                         for (var key in options) {
                             if (options.hasOwnProperty(key)) {
-                                
+
                                 if (key == 'index') {
                                     if (this.indexPos != options.index) {
-                                        this.indexPos = options.index;
-                                        this.fire('indexchangedyjs');
+                                        this.indexPos = options.index;                                        
                                     }
                                 }
                                 else if (key == 'booleanvalue') {
@@ -750,7 +716,7 @@
                                     if (typeof options.type === 'string') {
 
                                         switch (this.type) {
-                                            case 'header':                                                
+                                            case 'header':
                                                 break;
                                             case 'text':
                                                 var element = this.$$('#stringvalue');
@@ -764,29 +730,32 @@
                                             case 'slider':
                                                 var element = this.$$('#numbervalue');
                                                 element.value = options[key];
-                                                break;                                           
+                                                break;
                                             case 'toggle':
                                                 var element = this.$$('#booleanvalue');
                                                 element.checked = options[key];
                                                 break;
                                             case 'dropdown':
                                                 var element = this.$$('#items');
-                                                element.value = (Array.isArray(options[key])) ? options[key].join(';') : options[key];
+                                                element.value = options[key].join(',') || options[key];//(Array.isArray(options[key])) ? options[key].join(';') : options[key];
                                                 break;
                                             case 'fixed':
                                                 var element = this.$$('#multilinevalue');
                                                 element.value = options[key];
                                             default:
-                                                
+
                                         }
 
 
-                                       
+
                                     }
                                 }
                                 else if (key == 'map') {
 
                                 }
+                                else if (key == 'position') {
+                                    this.updatePos( options[key].x , options[key].y, fromYjs);
+                                }                               
                                 else {
                                     var element = this.$$('#' + key);
                                     if (element && element.value != options[key]) {
@@ -801,7 +770,34 @@
                             }
                         }
                     }
-                }
+                },
+                updatePos: function (x, y, fromYjs) {
+                    if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+                        if (this.posX == x && this.posY == y) {
+                            return;
+                        }
+                        this.posX = x;
+                        this.posY = y;
+                    }
+
+                    this.style.left = this.posX + 'px';
+                    this.style.top = this.posY + 'px';
+
+                    this.repaint();
+                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                        if (this.yjs) {
+                            var self = this;
+                            var get = this.yjs.share.mapperContainers.get(this.id);
+
+                            if (get) {
+                                get.then(function (map) {
+                                    map.set('position', { x: self.posX, y: self.posY });
+                                });
+                            }
+
+                        }
+                    }
+                },
             });
         })();
     </script>

@@ -54,10 +54,12 @@
             paper-color-picker {
                 z-index: 5000;
             }
+
             .header {
                 display: flex;
-                align-items:center;
+                align-items: center;
             }
+
             #demo-controls {
                 border-top: 1px solid #999;
                 padding: 5px;
@@ -74,7 +76,6 @@
             paper-tabs, paper-toolbar {
                 background-color: #0094ff;
                 color: #fff;
-                
                 /*--paper-tabs-selection-bar-color: #ff6a00;*/
             }
 
@@ -97,7 +98,7 @@
             paper-card {
                 width: 100%;
                 margin-bottom: 18px;
-             /*   --paper-card-header-text:
+                /*   --paper-card-header-text:
 
             {
                 padding: 8px;
@@ -107,8 +108,18 @@
             --paper-card-header: {
                 border-bottom: 1px solid #ccc;
             }*/
-
             }
+
+                paper-card h2 {
+                    font-weight: 500;
+                    margin: 10px;
+                    text-align: center;
+                }
+
+                paper-card card-content {
+                    padding: 0 16px 16px 16px;
+                    position: relative;
+                }
 
             paper-textarea {
                 display: block;
@@ -157,26 +168,27 @@
                 padding: 0;
                 display: block;
             }
+
             #demo-controls paper-icon-button {
                 display: none;
             }
-                #demo-controls paper-icon-button.hidden {
-                    display:block;
-                }
 
+                #demo-controls paper-icon-button.hidden {
+                    display: block;
+                }
         </style>
         <!--<div id="room-selector">
             <paper-input id="room-name" label="Room" value="{{room}}"></paper-input>
             <paper-icon-button title="Switch Room" icon="icons:launch" on-click="handleSwitchRoom"></paper-icon-button>
         </div>-->
-        <div class="header">            
+        <div class="header">
             <paper-tabs selected="{{selectedTab}}" noink class$="{{_getCollapsedStyle(collapsed)}}">
                 <paper-tab title="Create"><iron-icon icon="icons:note-add"></iron-icon></paper-tab>
                 <paper-tab title="Edit"><iron-icon icon="icons:create"></iron-icon></paper-tab>
                 <paper-tab title="Export"><iron-icon icon="icons:cloud-download"></iron-icon></paper-tab>
                 <paper-tab title="Settings"><iron-icon icon="icons:settings"></iron-icon></paper-tab>
             </paper-tabs>
-            <paper-icon-button icon="icons:menu" on-click="handleCollapse"></paper-icon-button>
+            <paper-icon-button title="Open and Close Sidebar" icon="icons:menu" on-click="handleCollapse"></paper-icon-button>
         </div>
 
         <sweva-import-export-dialog id="import-export-dialog"
@@ -186,7 +198,8 @@
         <iron-pages selected="{{selectedTab}}" class$="{{_getCollapsedStyle(collapsed)}}">
             <div class="tab-page">
 
-                <paper-card heading="New Node">
+                <paper-card>
+                    <h2>New Processing Node</h2>
                     <div class="card-content">
                         <paper-input id="create-node-name" label="Alias" value="{{createNodeAlias}}"></paper-input>
                         <paper-input id="create-node-url" label="Url" value="{{createNodeUrl}}"></paper-input>
@@ -201,47 +214,63 @@
                                 <div secondary>(read-only)</div>
                             </paper-item-body>
                         </paper-icon-item>-->
-                        <paper-icon-item on-click="handleCreateNode">
-                            <iron-icon item-icon icon="icons:cloud-off"></iron-icon>
-                            <div class="text">Create Empty</div>
-                        </paper-icon-item>
                         <paper-icon-item on-click="handleCreateNodeUrl">
                             <iron-icon item-icon icon="icons:cloud-queue"></iron-icon>
                             <div class="text">Create From Url</div>
                         </paper-icon-item>
+                        <paper-icon-item on-click="handleCreateNode">
+                            <iron-icon item-icon icon="icons:cloud-off"></iron-icon>
+                            <div class="text">Create Empty</div>
+                        </paper-icon-item>
 
-                        <paper-icon-item>
-                            <iron-icon item-icon icon="icons:exit-to-app"></iron-icon>
+                        <paper-icon-item on-click="handleImportNodeJSON">
+                            <iron-icon item-icon icon="icons:file-upload"></iron-icon>
+                            <div class="text">Import as JSON</div>
+                        </paper-icon-item>
+                        <!--<paper-icon-item>
+                            <iron-icon item-icon icon="icons:file-upload"></iron-icon>
+
                             <paper-dropdown-menu label="Import">
                                 <paper-menu class="dropdown-content">
                                     <paper-item on-click="handleImportNodeJSON">JSON</paper-item>
                                     <paper-item on-click="handleImportNodeObject">Object</paper-item>
                                 </paper-menu>
                             </paper-dropdown-menu>
+                        </paper-icon-item>-->
+                    </div>
+                </paper-card>
+                <paper-card>
+                    <h2>New Input Node</h2>
+                    <div class="card-content">
+
+                        <paper-icon-item on-click="handleCreateInputNode">
+                            <iron-icon item-icon icon="icons:accessibility"></iron-icon>
+                            <div class="text">Create New</div>
                         </paper-icon-item>
                     </div>
                 </paper-card>
 
-                <paper-card heading="Import Project">
+                <paper-card>
+                    <h2>Import Project</h2>
                     <div class="card-content">
 
                         <paper-icon-item on-click="handleImportCompositionJSON">
-                            <iron-icon item-icon icon="icons:exit-to-app"></iron-icon>
+                            <iron-icon item-icon icon="icons:file-upload"></iron-icon>
                             <div class="text">Import as JSON</div>
                         </paper-icon-item>
                     </div>
                 </paper-card>
 
-                <paper-card heading="Utilities">
+                <paper-card>
+                    <h2>Utilities</h2>
                     <div class="card-content">
-
-                        <paper-icon-item on-click="handleClearAll">
-                            <iron-icon item-icon icon="icons:clear"></iron-icon>
-                            <div class="text">Clear All</div>
-                        </paper-icon-item>
                         <paper-icon-item on-click="handleAutoLayout">
                             <iron-icon item-icon icon="icons:apps"></iron-icon>
                             <div class="text">Auto Layout</div>
+                        </paper-icon-item>
+                        <paper-icon-item on-click="handleClearAll">
+                            <iron-icon item-icon icon="icons:clear"></iron-icon>
+                            <div class="text">Clear All</div>
                         </paper-icon-item>
                     </div>
                 </paper-card>
@@ -324,8 +353,16 @@
             </div>
         </iron-pages>
         <div id="demo-controls" class$="{{_getCollapsedStyle(collapsed)}}">
-            <paper-button on-click="handleUpdateModel" class$="{{_getCollapsedStyle(collapsed)}}">Update Model</paper-button>
-            <paper-icon-button icon="icons:autorenew" on-click="handleUpdateModel" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
+
+
+            <paper-button style="background:#0094ff; margin-bottom: 10px;" on-click="handleOpenVisualizationSelect" class$="{{_getCollapsedStyle(collapsed)}}">Select Visualization</paper-button>
+            <paper-button style="background:#ff6a00" on-click="handleUpdateModel" class$="{{_getCollapsedStyle(collapsed)}}">Update Visualization Model</paper-button>
+            <paper-icon-button title="Add Empty Nodes" icon="icons:note-add" on-click="handleCreateNode" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
+            <paper-icon-button title="Browse Nodes" icon="icons:extension" on-click="handleOpenRepository" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
+            <paper-icon-button title="Add Input Node" icon="icons:accessibility" on-click="handleCreateInputNode" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
+            
+            <paper-icon-button title="Select Visualization" style="margin-top:25px;" icon="icons:timeline" on-click="handleOpenVisualizationSelect" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
+            <paper-icon-button title="Update Visualization Model" style="background:#ff6a00;color:white" icon="icons:input" on-click="handleUpdateModel" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
         </div>
     </template>
 
@@ -342,7 +379,7 @@
                     },
                     createNodeAlias: {
                         type: String,
-                        value: 'MyNode'
+                        value: ''
                     },
                     createNodeUrl: {
                         type: String,
@@ -385,21 +422,27 @@
                 attached: function () {
                     this.collapse();
                 },
-                _getCollapsedStyle: function(collapsed){
+                _getCollapsedStyle: function (collapsed) {
                     if (collapsed) {
                         return 'hidden'
                     }
 
                     return '';
                 },
+                handleCreateInputNode: function () {
+                    this.fire('createinputnode');
+                },
+                handleOpenVisualizationSelect: function () {
+                    this.fire('openvisualizationselect');
+                },
                 handleUpdateModel: function () {
                     this.fire('updatemodel', {});
                 },
                 handleCollapse: function () {
                     this.collapsed = !this.collapsed;
-                    this.collapse();                    
+                    this.collapse();
                 },
-                collapse: function(){
+                collapse: function () {
                     if (!this.collapsed) {
                         this.style.width = 230 + 'px';
                     }
@@ -408,7 +451,7 @@
                     }
                     this.fire('collapsed', this.collapsed);
                 },
-               
+
                 handlePotentialAliasUpdate: function (event) {
                     var input = this.$$('#node-alias');
                     if (input && this.selectedNode) {
@@ -417,8 +460,8 @@
                         }
                     }
                 },
-                handleOpenRepository: function(){
-                    this.fire('repositorybrowse', { category: 'modules', callback: this.setUrl.bind(this) });
+                handleOpenRepository: function () {
+                    this.fire('repositorybrowse', { category: 'modules', callback: this.setUrlAndCreate.bind(this) });
                 },
                 handleSwitchRoom: function () {
                     this.fire('switchroom', this.room);
@@ -496,19 +539,18 @@
                 handleSubmitNode: function () {
 
                 },
+                handleCreateInputNode: function () {
+                    this.fire('createinputnode', {});
+                },
                 handleCreateNode: function () {
                     var alias = this.createNodeAlias;
-                    if (alias.trim().length == 0) {
-                        alias = 'Node';
-                    }
+
 
                     this.fire('createnode', { alias: alias, url: '' });
                 },
                 handleCreateNodeUrl: function (event, a, fixed) {
                     var alias = this.createNodeAlias;
-                    if (alias.trim().length == 0) {
-                        alias = 'Node';
-                    }
+
                     var url = this.createNodeUrl;
 
                     if (url.trim().length == 0) {
@@ -543,9 +585,9 @@
 
                     this.selectedNode = node;
                 },
-                hexToRgb: function(hex) {
-                            // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-                                    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+                hexToRgb: function (hex) {
+                    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+                    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
                     hex = hex.replace(shorthandRegex, function (m, r, g, b) {
                         return r + r + g + g + b + b;
                     });
@@ -560,10 +602,14 @@
                         }
                     }
                     return null;
-                           
+
                 },
-                setUrl: function(url) {
+                setUrl: function (url) {
                     this.createNodeUrl = url;
+                },
+                setUrlAndCreate: function (url) {
+                    this.setUrl(url);
+                    this.handleCreateNodeUrl();
                 },
                 updateUser: function (data) {
 
@@ -571,7 +617,7 @@
                         this.username = data.name;
                     }
                     if (data.color) {
-                       
+
                         var color = this.hexToRgb(data.color);
                         if (color) {
                             var usercolor = {}

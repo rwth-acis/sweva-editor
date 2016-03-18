@@ -16,7 +16,7 @@
                 right: 230px;
                 bottom: 0;
                 margin: 10px;
-                border: 1px dashed #aaa;
+               
                 overflow: hidden;
                 transition: right cubic-bezier(0.18, 0.89, 0.32, 1.28) 0.2s;
             }
@@ -33,8 +33,8 @@
                 display: flex;
                 background: #ffffff;
                 align-items: center;
-                padding:0 10px;
-                 pointer-events: all;
+                padding: 0 10px;
+                pointer-events: all;
             }
 
                 .type-area paper-input {
@@ -48,7 +48,9 @@
                 pointer-events: none;
                 background: rgba(255,255,255,0.5);
             }
-
+            .hide-buttons {
+                pointer-events: all;
+            }
             .name {
                 font-weight: 600;
             }
@@ -56,16 +58,18 @@
             .time {
                 float: right;
             }
+
             .text {
                 white-space: pre-wrap;
             }
+
             .scroll {
                 background: #ffffff;
                 height: 100%;
                 width: 40px;
                 pointer-events: all;
                 overflow: auto;
-                background: repeating-linear-gradient( 135deg, #FFFFFF, #FFFFFF 10px, #AAA 10px, #aaa 11px );
+                /*background: rgba(50,50,50,0.1); /*repeating-linear-gradient( 135deg, #FFFFFF, #FFFFFF 10px, #AAA 10px, #aaa 11px );*/
             }
 
             paper-textarea {
@@ -76,6 +80,8 @@
                 overflow-x: hidden;
             }
         </style>
+        
+
         <div class="message-list">
             <div class="container">
                 <template is="dom-repeat" items="{{messages}}">
@@ -95,7 +101,7 @@
             </div>
         </div>
         <div class="type-area">
-            <paper-textarea label="Message"  on-keydown="handleEnter" value="{{currentMessage}}"></paper-textarea>
+            <paper-textarea label="Message" on-keydown="handleEnter" value="{{currentMessage}}"></paper-textarea>
             <paper-icon-button icon="icons:send" on-click="handleSendMessage"></paper-icon-button>
         </div>
     </template>
@@ -111,9 +117,9 @@
                         value: []
 
                     },
-                    currentMessage:{
+                    currentMessage: {
                         type: String,
-                        value:''
+                        value: ''
                     },
                     scrollHeight: {
                         type: Number,
@@ -149,11 +155,11 @@
                 attached: function () {
                     this._messagesChanged();
 
-                   
+
                 },
-                _collapsedChanged: function (collapsed){
+                _collapsedChanged: function (collapsed) {
                     if (this.collapsed) {
-                        this.style.right = 40+'px';
+                        this.style.right = 40 + 'px';
                     }
                     else {
                         this.style.right = 230 + 'px';
@@ -163,10 +169,10 @@
                     var self = this;
                     this.yjs = yjs;
                     yjs.share.chat.observe(function (events) {
-                        for (var i = 0; i < events.length; i++) {   
-                            
+                        for (var i = 0; i < events.length; i++) {
+
                             if (events[i].type === 'insert') {
-                                
+
                                 self.appendMessage(events[i].object._content[events[i].index].val, events[i].index);
                             } else if (events[i].type === 'delete') {
                                 self.removeMessage(events[i].index);
@@ -177,19 +183,19 @@
                         self.cleanupChat()
                     });
                 },
-                appendMessage: function(message, position){
+                appendMessage: function (message, position) {
                     var messages = this.messages.slice(0);
 
                     messages.splice(position, 0, message);
                     this.messages = messages;
-                    
+
                 },
                 removeMessage: function (position) {
                     var messages = this.messages.slice(0);
                     messages.splice(position, 1);
                     this.messages = messages;
                 },
-                cleanupChat: function(){
+                cleanupChat: function () {
                     var len;
                     while ((len = this.yjs.share.chat.length) > 50) {
                         this.yjs.share.chat.delete(0)
@@ -218,7 +224,7 @@
                 },
                 handleEnter: function (e) {
                     // check if 'enter' was pressed
-                    
+
                     if (e.keyCode === 13 && !e.ctrlKey && !e.shiftKey) {
                         e.preventDefault();
                         this.handleSendMessage();
@@ -246,16 +252,16 @@
                         // If we are goint to insert the 8th element, make sure to delete first.
                         this.yjs.share.chat.delete(0);
                     }
-                   
+
                     this.yjs.share.chat.insert(this.yjs.share.chat.length, [message]);
 
 
-                    
-                    
-                    
+
+
+
                 },
                 handleSendMessage: function () {
-                    
+
                     var message = this.currentMessage;
                     if (message.trim().length > 0) {
                         this.currentMessage = "";
@@ -272,7 +278,7 @@
                 },
                 cleanUp: function () {
                     this.messages = [];
-                    this.yjs = null;                    
+                    this.yjs = null;
                     this.users = [];
                 }
             });

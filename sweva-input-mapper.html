@@ -9,86 +9,18 @@
     <template>
         <style>
             :host {
-                width: 500px;
-                height: 300px;
-                display: flex;
-                flex-direction: column;
-                position: absolute;
-                left: 2000px;
-                top: 2000px;
-                background-color: #ff6a00;
-                border-radius: 10px;
+                display: block;
             }
 
-            #header {
-                color: #fff;
-                text-align: center;
-                font-size: 15px;
-                padding: 4px;
-            }
-
-            #content {
-                padding: 25px 15px 20px 15px;
-                flex: 1 1 0;
-                display: flex;
-                flex-direction: row;
-            }
-
-            #container {
-                flex: 1 1 0;
-                display: flex;
-                flex-direction: row;
-            }
-
-            #content paper-icon-button {
-                width: 70px;
-                height: 70px;
-                margin: 20px;
-            }
-            #visualization-select {
-                display: flex;
-                color: #fff;
-                align-content:center;
-            }
-            #visualization-select paper-icon-button {
-                width: 40px;
-                height: 40px;
-            }
-            #visualization-url {
-                --paper-input-container-color: #fff;
-                --paper-input-container-input-color: #fff;
-                --paper-input-container-focus-color: #111;
-                margin: -10px 10px 0 10px;
-                flex: 1;
-            }
+           
         </style>
-        <div id="header">
-            Input Mapping
-            <paper-icon-button style="float: right;
-                                        height: 20px;
-                                        padding: 2px;"
-                               title="Minimize"
-                               icon="icons:check-box-outline-blank"
-                               on-click="handleMinimize">
-            </paper-icon-button>
-        </div>
-        <div id="visualization-select">
-            <paper-input id="visualization-url" label="Visualization Tool" value="{{visualizationUrl}}" on-change="handleVisualizationChanged"></paper-input>
-            <paper-icon-button title="Browse Visualizations" icon="icons:extension" on-click="handleVisualizationBrowse"></paper-icon-button>
-        </div>
-        <div id="content">
+      
+        <div id="input-canvas">
 
-            <div id="container">
-            </div>
+            <content>
 
-            <template is="dom-if" if="{{showAdd}}">
-                <paper-icon-button title="Add"
-                                   icon="icons:add-circle-outline"
-                                   on-click="handleAdd">
-                </paper-icon-button>
-            </template>
+            </content>
         </div>
-        
     </template>
     <script>
         (function () {
@@ -96,15 +28,7 @@
 
             Polymer({
                 is: 'sweva-input-mapper',
-                properties: {
-                    posX: {
-                        type: Number,
-                        value: 50
-                    },
-                    posY: {
-                        type: Number,
-                        value: 50
-                    },
+                properties: {                    
                     yjs: {
                         type: Object,
                         value: null
@@ -112,19 +36,11 @@
                     jsPlumbInstance: {
                         type: Object,
                         value: null
-                    },
-                    showAdd: {
-                        type: Boolean,
-                        value: true
-                    },
+                    },                    
                     edges: {
                         type: Object,
                         value: null
-                    },
-                    visualizationUrl: {
-                        type: String,
-                        value: ''
-                    }
+                    }                   
                 },
                 ready: function () {
 
@@ -134,147 +50,45 @@
                 },
                 add: function (options, fromYjs) {
 
-                    var parent = this.$.container;
+                   
                     var inputContainer = document.createElement('sweva-input-container');
+                    
 
-                    var inserted = false;
-                    if (typeof options === 'object') {
-                        //if index given
-                        if (typeof options.index === 'number') {
-
-                            var children = Polymer.dom(parent).children;
-                            var previousIndex = 0;
-                            for (var i = 0; i < children.length; i++) {
-                                var element = children[i];
-                                if (element.indexPos == options.index) {
-                                    var nextSibling = Polymer.dom(element).nextSibling;
-                                    if (nextSibling) {
-                                        inserted = true;
-                                        inputContainer.indexPos = element.indexPos + (nextSibling.indexPos - element.indexPos) / 2.0;
-
-                                        Polymer.dom(parent).appendChild(inputContainer);
-                                    }
-                                }
-
-                            }
-
-                        }
+                    if (typeof options === 'object' && typeof options.index === 'number') {
+                        
                     }
-
-                    if (!inserted) {
-
-                        var children = Polymer.dom(parent).children;
-                        var highestIndex = 0;
+                    else {
+                        var children = Polymer.dom(this).children;
+                        var maxIndex = 0;
                         for (var i = 0; i < children.length; i++) {
                             var element = children[i];
-                            if (highestIndex < element.indexPos) {
-                                highestIndex = element.indexPos;
+                            if (element.indexPos >= maxIndex) {
+                                maxIndex = element.indexPos;
                             }
                         }
-                        inputContainer.indexPos = highestIndex + 1;
-                        Polymer.dom(parent).appendChild(inputContainer);
+                        inputContainer.indexPos = maxIndex + 1;
                     }
 
-                    this.updateDOM();
+                   
+                    Polymer.dom(this).appendChild(inputContainer);
+                    Polymer.dom.flush();
 
                     if (typeof options === 'object') {
                         inputContainer.init(this.jsPlumbInstance, this.yjs, this.edges, options.id, fromYjs);
+                        inputContainer.update(options);
                     }
                     else {
                         inputContainer.init(this.jsPlumbInstance, this.yjs, this.edges, null, fromYjs);
                     }
 
-                    inputContainer.addEventListener('moveleft', this.handleContainerMoveLeft.bind(this), false);
-                    inputContainer.addEventListener('moveright', this.handleContainerMoveRight.bind(this), false);
-                    inputContainer.addEventListener('close', this.handleContainerClose.bind(this), false);
-                    inputContainer.addEventListener('add', this.handleContainerAdd.bind(this), false);
-                    inputContainer.addEventListener('minimized', this.updateWidth.bind(this), false);
-                    inputContainer.addEventListener('indexchangedyjs', this.updateDOM.bind(this), false);
-
-                    if (typeof options === 'object') {
-                         if (typeof options.index === 'number') {
-                             delete options.index;
-                         }
-                        inputContainer.update(options);
-                    }
-                    if (this.showAdd) {
-                        this.showAdd = false;
-                        var self = this;
-                        setTimeout(function () {
-                            self.jsPlumbInstance.repaintEverything();
-                        }, 100);
-
-                    }
-
                     return inputContainer;
                 },
-                updateDOM: function () {
-
-                    var parent = this.$.container;
-                    var children = Polymer.dom(parent).children;
-
-                    var copy = [];
-
-                    for (var i = 0; i < children.length; i++) {
-                        var element = children[i];
-
-                        copy.push(element);
-                        Polymer.dom(parent).removeChild(element);
-                    }
-
-                    copy.sort(function (a, b) { return a.indexPos - b.indexPos; });
-
-                    //console.log(children);
-                    for (var i = 0; i < copy.length; i++) {
-                        var element = copy[i];
-                        Polymer.dom(parent).appendChild(element);
-                    }
-
-                    Polymer.dom.flush();
-                    this.updateWidth();
-                },
+                
                 init: function (jsPlumb, yjs, edges) {
                     this.edges = edges;
                     this.yjs = yjs;
                     this.jsPlumbInstance = jsPlumb;
-
                     var self = this;
-                    this.jsPlumbInstance.draggable(this, {
-                        start: function (event) {
-                            if (event.el && event.el.offsetLeft) {
-                                self.updatePos(event.el.offsetLeft, event.el.offsetTop);
-                                //self.jsPlumbInstance.recalculateOffsets(event.el);
-                                self.jsPlumbInstance.repaint(event.el);
-                            }
-
-                        },
-
-                        stop: function (event) {
-                            if (event.el && event.el.offsetLeft) {
-                                self.updatePos(event.el.offsetLeft, event.el.offsetTop);
-                            }
-
-                        }
-
-                    });
-                    this.updateWidth();
-
-                    this.yjs.share.mapper.observe(function (events) {
-                        var position = self.yjs.share.mapper.get('position');
-
-                        if (position != null) {
-                            self.updatePos(position.x, position.y, true);
-                            self.jsPlumbInstance.repaintEverything();
-                        }
-
-                    });
-
-                    this.yjs.share.mapperVisualization.observe(function (events) {
-                        var url = self.yjs.share.mapperVisualization.get('url');
-                        if (url != null && self.visualizationUrl != url) {
-                            self.visualizationUrl = url;
-                        }
-                    });
 
                     this.yjs.share.mapperContainers.observe(function (events) {
                         for (var i = 0; i < events.length; i++) {
@@ -297,6 +111,9 @@
                                             var items = map.get('items') || '';
                                             var description = map.get('description') || '';
 
+                                            var position = map.get('position') || { x: 10, y: 10 };
+                                            
+
                                             var container = document.getElementById(event.name);
 
                                             if (!container) {
@@ -312,7 +129,9 @@
                                                     min: min,
                                                     max: max,
                                                     items: items,
-                                                    description: description
+                                                    description: description,
+                                                    position: position
+
                                                 }, true);
 
                                             }
@@ -337,7 +156,7 @@
                                                             var property = event2.name;
                                                             var value = event2.object.contents[property];
                                                             var container = document.getElementById(event.name);
-
+                                                            
                                                             if (container) {
                                                                 var options = {};
                                                                 options[property] = value;
@@ -359,7 +178,7 @@
                                 else if (event.type === 'delete') {
                                     var node = document.getElementById(event.name);
                                     if (node) {
-                                        self.remove(node, true);
+                                        node.remove(true);
                                     }
 
                                 }
@@ -367,21 +186,7 @@
                         }
                     });
 
-                },
-                handleVisualizationChanged: function (event) {
-                    this.yjs.share.mapperVisualization.set('url', this.visualizationUrl);
-                },
-                handleVisualizationBrowse: function (event) {
-                    this.fire('repositorybrowse', { category: 'visualizations', callback: this.setVisualizationUrl.bind(this) });
-                },
-                setVisualizationUrl: function(url){
-                    this.visualizationUrl = url;
-                    this.yjs.share.mapperVisualization.set('url', this.visualizationUrl);
-                },
-                setVisualization: function (visualization) {
-                    this.visualizationUrl = visualization;
-                    this.handleVisualizationChanged();
-                },
+                },                
                 getInformation: function () {
                     var result = [{
                         label: 'Section1',
@@ -389,10 +194,15 @@
                     }];
                     var currentSection = 0;
                     var firstHeaderSeen = false;
-                    var parent = this.$.container;
-                    var children = Polymer.dom(parent).children;
+                    
+                    var children = Polymer.dom(this).children;
+
+                    children.sort(function (a, b) {
+                        return a.indexPos > b.indexPos;
+                    });
 
                     for (var i = 0; i < children.length; i++) {
+                        
                         var container = children[i].getInformation();
                         if (typeof container === 'object' && Object.keys(container).length > 0) {
                             if (container.type == 'header') {
@@ -414,158 +224,19 @@
                         }
 
                     }
-                    var visualization = this.visualizationUrl;
-                    return { visualization: visualization, sections: result };
-                },
-                handleAdd: function () {
-                    this.add();
-                },
-                moveContainer: function (element, direction) {
-
-                    var parent = this.$.container;
-                    var children = Polymer.dom(parent).children;
-
-                    for (var i = 0; i < children.length; i++) {
-                        var container = children[i];
-                        if (container.id == element.id) {
-                            if (direction == 'left') {
-                                if (i <= 0) {
-                                    return; //ignore leftmost tem
-                                }
-                                var temp = children[i].indexPos;
-                                children[i].updateIndex(children[i - 1].indexPos);
-                                children[i - 1].updateIndex(temp);
-
-                            }
-                            else {
-                                if (i == children.length - 1) {
-                                    return; //ignore rightmost tem
-                                }
-                                var temp = children[i].indexPos;
-                                children[i].updateIndex(children[i + 1].indexPos);
-                                children[i + 1].updateIndex(temp);
-                            }
-                            
-                            this.updateDOM();
-                            break;
-                        }
-                    }
-
+                    
+                    return result;
                 },
                 clear: function () {
-                    var parent = this.$.container;
-                    var children = Polymer.dom(parent).children;
+                    
+                    var children = Polymer.dom(this).children;
 
                     for (var i = 0; i < children.length; i++) {
                         var container = children[i];
                         this.remove(container);
                     }
-                },
-                remove: function (element, fromYjs) {
-                    var parent = this.$.container;
-
-                    element.clear();
-                    Polymer.dom(parent).removeChild(element);
-                    if (typeof element === 'undefined' || !fromYjs) {
-                        this.yjs.share.mapperContainers.delete(element.id);
-                    }
-                    this.updateDOM();
-
-                    if (Polymer.dom(parent).children.length <= 0) {
-                        this.showAdd = true;
-                    }
-
-                },
-                handleMinimize: function () {
-
-                    var allMinimized = true;
-
-                    var parent = this.$.container;
-                    var children = Polymer.dom(parent).children;
-
-                    for (var i = 0; i < children.length; i++) {
-                        var container = children[i];
-                        if (!container.minimized) {
-                            allMinimized = false;
-                            break;
-                        }
-                    }
-
-                    for (var i = 0; i < children.length; i++) {
-                        var container = children[i];
-
-                        container.minimize(!allMinimized);
-                    }
-                    this.updateWidth();
-                },
-                handleContainerMoveLeft: function (event) {
-                    this.moveContainer(event.detail, 'left');
-                },
-                handleContainerMoveRight: function (event) {
-                    this.moveContainer(event.detail, 'right');
-                },
-                handleContainerClose: function (event) {
-                    this.remove(event.detail);
-
-                },
-                handleContainerAdd: function (event) {
-                    var element = event.detail;
-
-                    this.add({ index: element.indexPos });
-
-                },
-                updateWidth: function () {
-
-                    var containerWidth = 50;
-
-                    var parent = this.$.container;
-                    var children = Polymer.dom(parent).children;
-
-                    if (children.length > 0) {
-
-                        var width = 0;
-                        for (var i = 0; i < children.length; i++) {
-                            if (children[i].minimized) {
-                                width += children[i].minimizedWidth;
-                            }
-                            else {
-
-                                width += children[i].width;
-                            }
-                            width += 10;
-                        }
-                        if (width < 200) {
-                            width = 200;
-                        }
-                        this.style.width = width + 'px';
-                    }
-                    else {
-                        this.style.width = (150) + 'px';
-                    }
-
-                    this.jsPlumbInstance.repaintEverything();
-                },
-                updatePos: function (x, y, fromYjs) {
-                    if (typeof x !== 'undefined' && typeof y !== 'undefined') {
-                        if (this.posX == x && this.posY == y) {
-                            return;
-                        }
-                        this.posX = x;
-                        this.posY = y;
-                    }
-
-                    this.style.left = this.posX + 'px';
-                    this.style.top = this.posY + 'px';
-
-                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
-                        if (this.yjs) {
-                            var self = this;
-                            this.yjs.share.mapper.set('position', { x: self.posX, y: self.posY });
-                        }
-                    }
-
                 }
-
+                
             });
         })();
     </script>

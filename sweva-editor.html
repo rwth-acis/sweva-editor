@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer.html">
 
+<link  rel="import" href="../paper-spinner/paper-spinner.html"/>
 <link rel="import" href="sweva-canvas.html">
 <link rel="import" href="sweva-panel.html">
 <link rel="import" href="sweva-code.html">
@@ -76,9 +77,19 @@ Example:
 
             paper-dialog {
                 background: #fff;
+                width: 100%;
+            }
+            paper-spinner {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 50px;
+                height: 50px;
+                display:block;
+                z-index: 9001;
             }
         </style>
-
+        <paper-spinner id = "spinner" active="{{!loaded}}"></paper-spinner>
         <sweva-canvas id="canvas-container"
                       canvas-offset-x="{{canvasOffset.x}}"
                       canvas-offset-y="{{canvasOffset.y}}"
@@ -87,15 +98,16 @@ Example:
 
             <sweva-cursor-awareness id="cursor-awareness"></sweva-cursor-awareness>
             <sweva-node-manager canvas-offset="{{canvasOffset}}"
+                                repository-url-prefix="{{repositoryUrlPrefix}}"
+                                repository-url-suffix="{{repositoryUrlSuffix}}"
                                 on-jsplumbloaded="handleJsPlumbLoaded"
                                 on-nodecreated="handleNodeCreated"
                                 on-nodeselected="handleNodeSelection"
                                 on-editnode="handleEditNode"
                                 on-clonenode="handleCloneNode"
                                 on-deletenode="handleDeleteNode"
-                                on-repositorybrowse="handleRepositoryBrowse"
-                                repository-url-prefix="{{repositoryUrlPrefix}}"
-                                repository-url-suffix="{{repositoryUrlSuffix}}">
+                                on-repositorybrowse="handleRepositoryBrowse"                               
+                                on-updatevisualization = "handleUpdateVisualization">
             </sweva-node-manager>
         </sweva-canvas>
 
@@ -114,7 +126,9 @@ Example:
                      on-switchroom="handleSwitchRoom"
                      on-updatemodel="handleUpdateModel"
                      on-repositorybrowse="handleRepositoryBrowse"
-                     on-collapsed = "handleCollapsed">
+                     on-collapsed = "handleCollapsed"
+                     on-createinputnode ="handleCreateInputNode"
+                     on-openvisualizationselect="handleOpenVisualizationSelect">
         </sweva-panel>
         <sweva-user-manager on-useradded="handleUserAdded"
                             on-userdeleted="handleUserDeleted"
@@ -128,6 +142,23 @@ Example:
 
         </div>
 
+       
+            <paper-dialog id="visualization-select">
+                <div class="dialog-container">
+                    <h2>Select Visualization</h2>
+                    <div style="display:flex;align-items: center;">
+                        <paper-input label="Visualization URL" style="flex:1" value="{{visualization}}">
+                       
+                        </paper-input>
+                        <paper-icon-button title="Browse Visualizations"icon="icons:timeline" on-click="handleOpenVisualizationRepository"></paper-icon-button>
+                    </div>
+                    <div class="buttons">                  
+                        <paper-button dialog-dismiss>Cancel</paper-button>
+                        <paper-button dialog-confirm on-click="handleAcceptVisualization">Accept</paper-button>
+                    </div>
+                </div>
+            </paper-dialog>
+       
         <sweva-repository-browser id="repository-browser" repository-url="{{repositoryUrlPrefix}}"></sweva-repository-browser>
     </template>
 
@@ -143,8 +174,8 @@ Example:
     
      <script src="../y-text/y-text.js"></script>
 
-    <!--<script src="../y-websockets-client/y-websockets-client.js"></script>-->
-    <script src="y-websockets-client.js"></script>
+    <script src="../y-websockets-client/y-websockets-client.js"></script>
+    <!--<script src="y-websockets-client.js"></script>-->
     
 
     <script src="../gsap/src/minified/TweenLite.min.js"></script>
@@ -154,7 +185,7 @@ Example:
     <script src="https://cdn.rawgit.com/cpettitt/dagre/master/dist/dagre.js"></script>
 
     <!--<script src="https://rawgit.com/rwth-acis/SWeVA-Core/master/app/core.build.js"></script>-->
-    <script src="http://134.61.169.65:5001/core.build.js"></script>
+    <script src="http://localhost:5001/core.build.js"></script>
     <script src="../download-as-file/dist/download-as-file.js"></script>
     <!--<script src="../dagre/dist/dagre.core.min.js"></script>
     <!--<script src="../graphlib/dist/graphlib.core.min.js"></script>-->
@@ -210,10 +241,46 @@ Example:
                         type: String,
                         value: '',
                         observer: '_roomChanged'
+                    },
+                    visualization: {
+                        type: String,
+                        value: ''
+                    },
+                    loaded: {
+                        type: Boolean,
+                        value: false
                     }
                 },
                 _roomChanged: function () {
                     this.start(this.room)
+                },
+                handleUpdateVisualization: function (event){
+                    this.updateVisualization(event.detail);
+                },
+                handleOpenVisualizationRepository: function() {
+                    var repo = this.$$('#repository-browser');
+                    var self = this;
+                    repo.open({
+                        category: 'visualizations',
+                        callback: function (url) {
+                            self.updateVisualization(url);
+                        }
+                    });
+                },
+                updateVisualization: function (url) {
+                    this.visualization = url;
+                    var nodeManager = this.$$('sweva-node-manager');
+                    nodeManager.updateVisualization(this.visualization);
+                    this.yjs.share.project.set('visualization', this.visualization);
+                },
+                handleAcceptVisualization: function () {
+                    this.updateVisualization(this.visualization);
+                },
+                handleOpenVisualizationSelect: function () {
+                    var visualization = this.$$('#visualization-select');
+                    if (visualization) {
+                        visualization.open();
+                    }
                 },
                 handleRepositoryBrowse: function (event) {
                     var repo = this.$$('#repository-browser');
@@ -225,16 +292,18 @@ Example:
                 },
                 handleNodeCreated: function (event) {
                     var node = event.detail;
-                    var editor = document.createElement('sweva-node-editor');
-                    editor.id = node.id + 'editor';
-                    Polymer.dom(this.$.editors).appendChild(editor);
-                    Polymer.dom.flush();
+
+                    if(!document.getElementById(node.id + 'editor')) {
+                        var editor = document.createElement('sweva-node-editor');
+                        editor.id = node.id + 'editor';
+                        Polymer.dom(this.$.editors).appendChild(editor);
+                        Polymer.dom.flush();
                    
-                    editor.init(this.yjs, node);
-                    
+                        editor.init(this.yjs, node);
+                    }
                 },
                 handleNodeSelection: function (event) {
-
+                    self.loaded = true;
                     var panel = this.$$('sweva-panel');
                     panel.updateNode(event.detail);
                     var userManager = this.$$('sweva-user-manager');
@@ -325,6 +394,10 @@ Example:
                 handleAutoLayout: function (event) {
                     var nodeManager = this.$$('sweva-node-manager');
                     nodeManager.autoLayout();
+                },
+                handleCreateInputNode: function() {
+                    var nodeManager = this.$$('sweva-node-manager');
+                    nodeManager.createInputNode();
                 },
                 handleCreateNode: function (event) {
                     var nodeManager = this.$$('sweva-node-manager');
@@ -569,6 +642,7 @@ Example:
                             mapper: 'Map',
                             mapperContainers: 'Map',
                             mapperVisualization: 'Map'
+                           
                         }
                     }).then(function (y) {
                         self.yjs = y;
@@ -586,24 +660,41 @@ Example:
 
                         var canvas = self.$$('#canvas-container');
                         canvas.pan(2, 2);
-
+                       
                         yjs.share.project.observe(function (events) {
+                            self.loaded = true;
                             var code = yjs.share.project.get('code') || '';
                             // var input = yjs.share.project.get('input') || {};
                             // var data = yjs.share.project.get('data') || {};
                             self.project.code = code;
+
+                            var visualization = yjs.share.project.get('visualization') || '';
+                            
+                            if (self.visualization != visualization) {
+                                
+                                self.updateVisualization(visualization);
+                            }
+                            
                             // self.project.input = input;
                             //self.project.data = data;
                         });
 
                         console.log(' editor loaded');
+
+                        setTimeout(function () {
+                            
+                            if (Object.keys(yjs.share.nodes.opContents).length == 0) {
+                                self.loaded = true;
+                            }
+                        }, 3000);
+                        
                     });
                 },
                 ready: function () {
 
                 },
                 attached: function () {
-
+                    this.$$('#visualization-select').fitInto=this;
                 }
 
             });

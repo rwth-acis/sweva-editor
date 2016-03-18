@@ -18,7 +18,7 @@
                 bottom: 0;
                 margin: 20px;
                 position: fixed;
-                width: 100%;
+                
             }
 
             .main .dialog-container {
@@ -150,7 +150,7 @@
 
                 },
                 attached: function () {
-                    var dialog = this.$$('paper-dialog');
+                    var dialog = this.$$('paper-dialog.main');
                     var self = this;
                     if (dialog) {
                         dialog.addEventListener('iron-overlay-closed', function (customEvent) {
@@ -159,7 +159,7 @@
                     }
                 },
                 open: function (options) {
-                    var dialog = this.$$('paper-dialog');
+                    var dialog = this.$$('paper-dialog.main');
                     if (dialog) {
                         this.callback = options.callback;
                         this.category = options.category;
@@ -174,13 +174,14 @@
                 },
 
                 handleAccept: function () {
-                    var dialog = this.$$('paper-dialog');
+                    var dialog = this.$$('paper-dialog.main');
                     if (dialog) {
                         this.isOpen = false;
-                        dialog.close();
+                       
                         if (typeof this.callback === 'function') {
                             this.callback(this.selectedUrl);
                         }
+                        dialog.close();
                     }
                 },
                 handleResponse: function (request) {

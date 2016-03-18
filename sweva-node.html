@@ -60,7 +60,9 @@
                 outline: none !important;
                 box-shadow: 1px 1px 10px#000000 !important;
             }
-
+            paper-tooltip {
+                width: 200%!important;
+            }
             paper-tooltip.endpoint-tooltip marked-element {
                 font-family: monospace !important;
                 white-space: pre;
@@ -123,7 +125,7 @@
                     },
                     alias: {
                         type: String,
-                        value: 'Node'
+                        value: ''
                     },
                     code: {
                         type: String,
@@ -135,7 +137,7 @@
                     },
                     tooltip: {
                         type: String,
-                        value: 'asdas'
+                        value: ''
                     },
                     fixed: {
                         type: Boolean,
@@ -481,12 +483,12 @@
                     }
 
                     var nodeInputEndpoint = {
-                        endpoint: "Dot",
+                        endpoint: "Rectangle",
                         paintStyle: {
-                            strokeStyle: "#0094ff",
+                            strokeStyle: "#333",
                             fillStyle: "#ffffff",
                             radius: 10,
-                            lineWidth: 4
+                            lineWidth: 6
                         },
                         hoverPaintStyle: nodeEndpointHoverStyle,
                         maxConnections: 1,
@@ -497,22 +499,18 @@
 
                     var nodeConnectorPaintStyle = {
                         lineWidth: 4,
-                        strokeStyle: "#0094ff",
+                        strokeStyle: "#ff9d00",
                         joinstyle: "round",
                         outlineColor: "white",
-                        outlineWidth: 2,
-                        gradient: {
-                            stops: [[0, "#ff9d00"], [1, "#0094ff"]]
-                        }
+                        outlineWidth: 2,                       
                     }
                     var nodeConnectorHoverStyle = {
                         lineWidth: 4,
                         strokeStyle: "#00cc00",
                         outlineWidth: 2,
                         outlineColor: "#00cc00",
-                        gradient: {
-                            stops: [[0, "#00cc00"], [1, "#00cc00"]]
-                        }
+                        
+                       
                     }
                     var nodeDataOutEndpoint = {
                         endpoint: "Dot",
@@ -553,7 +551,11 @@
 
                     this.edges = edges;
                     var position = position || { x: 0, y: 0 };
-                    this.alias = alias || 'Node';
+                    this.alias = alias || '';
+                    
+                    if (this.alias.trim().length == 0) {                       
+                        this.alias = 'Node' + (Math.floor(Math.random() * 300) + '');                       
+                    }
                     this.id = id || this._generateGUID();
                     this.fixed = fixed ? true : false;
 
@@ -597,8 +599,8 @@
                         yjs.share.nodes.set(self.id, Y.Map).then(function (map) {
 
                             map.set('position', { x: self.posX, y: self.posY });
-                            map.set('alias', alias);
-                            map.set('code', code);
+                            map.set('alias', self.alias);
+                            map.set('code', self.code);
                             map.set('fixed', self.fixed);
                             map.set('sharedCode' + self.id, Y.Text).then(function (text) {
 
@@ -613,12 +615,19 @@
 
                     }
                     else {
-                        
+                       
                         self.yjs.share.nodes.get(self.id).then(function (map) {
-                            map.get('sharedCode' + self.id).then(function (text) {
-                                self.sharedCode = text;
-                                self.fire('nodecreated', self);                                
-                            });
+                            var text = map.get('sharedCode' + self.id);
+                            
+                            if (text && text.then) {
+                               
+                                text.then(function (shared) {
+                                    self.sharedCode = shared;
+                                    self.fire('nodecreated', self);
+                                });                                
+                            }
+                            
+                                
                         });
                         
                     }
@@ -928,7 +937,7 @@
                             }
                         }
                         this.name = obj.name;
-
+                        this.description = obj.description || this.description;
                         if (this.jsPlumbInstance && obj.dataInNames && obj.dataOutNames && obj.inputNames) {
 
                             if (oldCode && oldCode.length > 0) {

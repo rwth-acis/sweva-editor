@@ -68,6 +68,10 @@
                     selectedNode: {
                         type: Object,
                         value: null
+                    },
+                    visualization: {
+                        type: String,
+                        value: ''
                     }
                     
 
@@ -143,18 +147,21 @@
                     var nodeDictionary = {};
                     var morethanOneNode = graph.nodes.length>1;
                     for (var i = 0; i < graph.nodes.length; i++) {
-                        nodeDictionary[graph.nodes[i].id] = graph.nodes[i];
-                        if (composition.composables.hasOwnProperty(graph.nodes[i].alias)) {
-                            alert('There are multiple nodes with the same alias: ' + graph.nodes[i].alias);
-                            return null;
+                        if (graph.nodes[i].alias) {
+                            nodeDictionary[graph.nodes[i].id] = graph.nodes[i];
+                            if (composition.composables.hasOwnProperty(graph.nodes[i].alias)) {
+                                alert('There are multiple nodes with the same alias: ' + graph.nodes[i].alias);
+                                return null;
+                            }
+                        
+                            if (graph.nodes[i].fixed) {
+                                composition.composables[graph.nodes[i].alias] = graph.nodes[i].name;
+                            }
+                            else {
+                                composition.composables[graph.nodes[i].alias] = JSON.parse(sweva.ComposableLoader.convertCodeToJson(graph.nodes[i].code));
+                            }
                         }
-
-                        if (graph.nodes[i].fixed) {
-                            composition.composables[graph.nodes[i].alias] = graph.nodes[i].name;
-                        }
-                        else {
-                            composition.composables[graph.nodes[i].alias] = JSON.parse(sweva.ComposableLoader.convertCodeToJson(graph.nodes[i].code));
-                        }
+                        
                     }
 
                     composition.links = {};
@@ -201,9 +208,9 @@
                     composition.visualization = '';
                     var container = this.$$('#input-mapper');
                     if (container) {
-                        var mapping = container.getInformation();
-                        composition.visualization = mapping.visualization;
-                        composition.controls = mapping.sections;
+                        var sections = container.getInformation();
+                        composition.visualization = this.visualization;
+                        composition.controls = sections;
                     }
 
                     var obj = JSON.parse(sweva.ComposableLoader.convertCodeToJson(code));
@@ -215,11 +222,27 @@
                     
                     return obj;
                 },
+                updateVisualization: function (url) {
+                    this.visualization = url;
+                },
                 updateViewport: function (viewPort) {
                     this.viewPort = viewPort;
                 },
                 getGraphData: function () {
-                    var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
+                    var nodes = [].slice.call(document.getElementById('canvas').querySelectorAll('sweva-node'));
+                    for (var i = 0; i < nodes.length; i++) {
+                        var node = nodes[i];
+                        node.graphNodeType = 'node';
+                    }
+
+                    var inputNodes = [].slice.call(document.getElementById('canvas').querySelectorAll('sweva-input-container'));
+
+                    for (var i = 0; i < inputNodes.length; i++) {
+                        var node = inputNodes[i];
+                        node.graphNodeType = 'input';
+                       
+                    }
+                    nodes = nodes.concat(inputNodes);
                     var edges = [];
 
                     this.jsPlumbInstance.select().each(function (connection) {
@@ -257,36 +280,41 @@
                     var nodeDictionary = {};
                     for (var i = 0; i < graph.nodes.length; i++) {
                         nodeDictionary[graph.nodes[i].id] = i;
-                        g.setNode(i, { width: graph.nodes[i].offsetWidth, height: graph.nodes[i].offsetHeight });
+                        g.setNode(i, { width: graph.nodes[i].offsetWidth, height: graph.nodes[i].offsetHeight, type: graph.nodes[i].graphNodeType });
                     }
 
                     for (var i = 0; i < graph.edges.length; i++) {
                         g.setEdge(nodeDictionary[graph.edges[i].from], nodeDictionary[graph.edges[i].to]);
                     }
 
-                    g.setGraph({ rankdir: 'LR', nodesep: 80, ranksep: 200 })
+                    g.setGraph({ rankdir: 'LR', nodesep: 120, ranksep: 200 })
                     dagre.layout(g);
 
                     var canvasOffset = this.canvasOffset;
-
+                    
                     g.nodes().forEach(function (v) {
                         if (typeof v !== 'undefined' && v !== 'undefined') {
 
                             var node = g.node(v);
                             var realNode = graph.nodes[v];
+                            
 
-                            realNode.posX = -canvasOffset.x + node.x;
-                            realNode.posY = -canvasOffset.y+400 + node.y;
+                            if (node.type == 'node') {
+                                realNode.posX = -canvasOffset.x + node.x;
+                                realNode.posY = -canvasOffset.y + node.y;
+                               
+                            }
+                            else {
+                                realNode.posX = -canvasOffset.x + node.x;
+                                realNode.posY = -canvasOffset.y + node.y;
+                                
+                            }
                             realNode.updatePos();
 
                         }
                     });
 
-                    var container = this.$$('#input-mapper');
-                    if (container) {
-                        container.updatePos(-canvasOffset.x, -canvasOffset.y);
-
-                    }
+                    
 
                     this.jsPlumbInstance.repaintEverything();
                 },
@@ -409,11 +437,10 @@
                             }                           
                         }
                         if (obj.visualization) {
-                            var container = self.$$('#input-mapper');
-                           
-                            if (container) {
-                                container.setVisualization(obj.visualization);
-                            }
+                            
+                            self.visualization = obj.visualization;
+                            self.fire('updatevisualization', obj.visualization);
+                            
                         }
 
                         autoLayout();
@@ -423,8 +450,18 @@
                    
 
                 },
-                createNode: function (options) {
+                createInputNode: function () {
+                    var container = this.$$('#input-mapper');
 
+                    var options = {};
+                    options.position = {};
+                    options.position.x = this.viewPort.left + (this.viewPort.right - this.viewPort.left) / 2;
+                    options.position.y = this.viewPort.top + (this.viewPort.bottom - this.viewPort.top) / 2;
+
+                    container.add(options);
+                },
+                createNode: function (options) {
+                    
                     var self = this;
                     var node = document.createElement('sweva-node');
                     
@@ -441,7 +478,7 @@
                             var y = options.y || center.y;
                             var fixed = options.fixed ? true : false;
 
-                            var alias = options.alias || 'Node';
+                            var alias = options.alias || '';
                             var code = options.code || sweva.ComposableLoader.getDefaultModule();
 
                            
@@ -503,6 +540,7 @@
                             ConnectionOverlays: [
                                 ["PlainArrow", { location: 1 }]
                             ],
+                           
                             Container: "canvas"
                         });
                         self.jsPlumbInstance = instance;
@@ -692,8 +730,9 @@
                             var event = events[i];
                             (function (event) {
                                 //console.log('event', event.name, event.type);
-
-                                if (event.type === 'add') {
+                               
+                                if (event.type === 'add' && event.object.opContents.hasOwnProperty(event.name)) {
+                                   
                                     try {
                                         yjs.share.nodes.get(event.name).then(function (map) {
 
@@ -731,12 +770,29 @@
                                                 var alias = map.get('alias');
                                                 var code = map.get('code');
                                                 var fixed = map.get('fixed');
+
+                                               
                                                 if (position != null && code != null && alias != null) {//prevent randomly inserting nodes at 0 0
 
                                                     var node = document.getElementById(event.name);
 
+                                                    
                                                     if (!node) {
                                                         return;
+                                                    }
+
+                                                    if (!node.sharedCode) {
+
+                                                        var text = map.get('sharedCode' + node.id);
+
+                                                        if (text && text.then) {
+                                                            text.then(function (shared) {
+                                                                node.sharedCode = shared;
+                                                                node.fire('nodecreated', node);
+                                                            });
+                                                        }
+                                                           
+                                                        
                                                     }
                                                     //node.jsPlumbInstance = self.jsPlumbInstance;
                                                     if (node.alias != alias) {
@@ -751,8 +807,6 @@
 
                                                     if (node.posX != position.x
                                                         || node.posY != position.y) {
-
-
                                                         node.animatePos(position.x, position.y, true);
 
 
@@ -765,10 +819,11 @@
                                         });
                                     }
                                     catch (e) {
-
+                                        console.log('not found');
                                     }
                                 }
                                 else if (event.type === 'delete') {
+                                   
                                     var node = document.getElementById(event.name);
                                     if (node) {
                                         node.remove(true);
@@ -776,6 +831,10 @@
                                         self.jsPlumbInstance.repaintEverything();
                                     }
 
+                                }
+                                else if (event.type === 'update') {
+
+                                    
                                 }
 
                             })(event);

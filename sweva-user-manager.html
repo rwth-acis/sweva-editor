@@ -28,7 +28,7 @@
                     },
                     maxUserAge: {
                         type: Number,
-                        value: 60000//600000 //10 min, before getting 'kicked'
+                        value: 600000//600000 //10 min, before getting 'kicked'
                     },
                     colorTable: {
                         type: Array,
@@ -268,8 +268,9 @@
                         var now = Date.now();
                         for (var key in self.users) {
                             if (self.users.hasOwnProperty(key) && key != self.ownId) {
-                                if (self.users[key].lastUpdate + self.maxUserAge < now) {
+                                if (self.users[key].lastUpdate + self.maxUserAge < now) {                                    
                                     self.deleteUser(key);
+                                    
                                 }
                             }
                         }
@@ -308,7 +309,7 @@
                             var event = events[i];
                             (function (event) {
 
-                                if (event.type !== 'delete') {
+                                if (event.type === 'add') {
                                     // console.log('eventuser', event.name, event.type);
 
                                     // console.log(yjs.share.users);
@@ -326,6 +327,9 @@
                                                 var color = map.get('color');
                                                 var name = map.get('name');
                                                 var selectedNode = map.get('selectedNode');
+                                                if (!self.users.hasOwnProperty(event.name)) {
+                                                    self.add(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
+                                                }
                                                 self.update(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
                                             });
                                         });
@@ -459,7 +463,6 @@
                             });
                         }
                         catch (e) {
-                            
                             this.yjs.share.users.set(id, Y.Map).then(function (map) {
                                 map.set('name', name);
                                 map.set('color', color);
@@ -473,12 +476,18 @@
                     updatedObject.isSelf = this.users[id].isSelf;
                     if (nameUpdated) {
                         this.users[id].name = name;
-                        localStorage['userName'] = name;
+                        if (id == this.ownId) {
+                            localStorage['userName'] = name;
+                        }
                         updatedObject.name = name;
+                        
+                        
                     }
                     if (colorUpdated) {
                         this.users[id].color = color;
-                        localStorage['userColor'] = color;
+                        if (id == this.ownId) {
+                            localStorage['userColor'] = color;
+                        }
                         updatedObject.color = color;
                     }
                     if (cursorUpdated) {
