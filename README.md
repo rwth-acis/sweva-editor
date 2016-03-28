@@ -1,6 +1,6 @@
-# seed-element
+## sweva-editor
 
-An element providing a starting point for your own reusable Polymer elements.
+The Collaborative Modeling Tool for the SWeVA platform.
 
 
 ## Dependencies
