@@ -90,100 +90,94 @@
                     this.jsPlumbInstance = jsPlumb;
                     var self = this;
 
-                    this.yjs.share.mapperContainers.observe(function (events) {
-                        for (var i = 0; i < events.length; i++) {
-                            var event = events[i];
-                            (function (event) {
+                    this.yjs.share.mapperContainers.observe(function (event) {
+                        (function (event) {
 
-                                if (event.type === 'add') {
-                                    try {
-                                        self.yjs.share.mapperContainers.get(event.name).then(function (map) {
+                            if (event.type === 'add') {
+                                try {
+                                    self.yjs.share.mapperContainers.get(event.name).then(function (map) {
 
-                                            var index = map.get('index') || -1;
-                                            var type = map.get('type') || '';
-                                            var label = map.get('label') || '';
-                                            var stringvalue = map.get('stringvalue') || '';
-                                            var multilinevalue = map.get('multilinevalue') || '';
-                                            var numbervalue = map.get('numbervalue') || '';
-                                            var booleanvalue = map.get('booleanvalue') || '';
-                                            var min = map.get('min') || '';
-                                            var max = map.get('max') || '';
-                                            var items = map.get('items') || '';
-                                            var description = map.get('description') || '';
+                                        var index = map.get('index') || -1;
+                                        var type = map.get('type') || '';
+                                        var label = map.get('label') || '';
+                                        var stringvalue = map.get('stringvalue') || '';
+                                        var multilinevalue = map.get('multilinevalue') || '';
+                                        var numbervalue = map.get('numbervalue') || '';
+                                        var booleanvalue = map.get('booleanvalue') || '';
+                                        var min = map.get('min') || '';
+                                        var max = map.get('max') || '';
+                                        var items = map.get('items') || '';
+                                        var description = map.get('description') || '';
 
-                                            var position = map.get('position') || { x: 10, y: 10 };
-                                            
+                                        var position = map.get('position') || { x: 10, y: 10 };
 
-                                            var container = document.getElementById(event.name);
 
-                                            if (!container) {
-                                                container = self.add({
-                                                    id: event.name,
-                                                    type: type,
-                                                    index: index,
-                                                    label: label,
-                                                    stringvalue: stringvalue,
-                                                    multilinevalue: multilinevalue,
-                                                    numbervalue: numbervalue,
-                                                    booleanvalue: booleanvalue,
-                                                    min: min,
-                                                    max: max,
-                                                    items: items,
-                                                    description: description,
-                                                    position: position
+                                        var container = document.getElementById(event.name);
 
-                                                }, true);
+                                        if (!container) {
+                                            container = self.add({
+                                                id: event.name,
+                                                type: type,
+                                                index: index,
+                                                label: label,
+                                                stringvalue: stringvalue,
+                                                multilinevalue: multilinevalue,
+                                                numbervalue: numbervalue,
+                                                booleanvalue: booleanvalue,
+                                                min: min,
+                                                max: max,
+                                                items: items,
+                                                description: description,
+                                                position: position
 
-                                            }
+                                            }, true);
 
-                                            var nodes = self.querySelectorAll('sweva-input-container');
+                                        }
 
-                                            for (var k = 0; k < nodes.length; k++) {
-                                                nodes[k].updateConnections();
-                                            }
+                                        var nodes = self.querySelectorAll('sweva-input-container');
 
-                                            nodes = self.querySelectorAll('sweva-node');
-                                            for (var k = 0; k < nodes.length; k++) {
-                                                nodes[k].updateConnections();
-                                            }
-                                            self.jsPlumbInstance.repaintEverything();
-                                            map.observe(function (events2) {
+                                        for (var k = 0; k < nodes.length; k++) {
+                                            nodes[k].updateConnections();
+                                        }
 
-                                                for (var k = 0; k < events2.length; k++) {
-                                                    var event2 = events2[k];
-                                                    (function (event2) {
-                                                        if (event2.type !== 'delete') {
-                                                            var property = event2.name;
-                                                            var value = event2.object.contents[property];
-                                                            var container = document.getElementById(event.name);
-                                                            
-                                                            if (container) {
-                                                                var options = {};
-                                                                options[property] = value;
-                                                                container.update(options, true);
-                                                            }
-                                                        }
-                                                    })(event2);
+                                        nodes = self.querySelectorAll('sweva-node');
+                                        for (var k = 0; k < nodes.length; k++) {
+                                            nodes[k].updateConnections();
+                                        }
+                                        self.jsPlumbInstance.repaintEverything();
+                                        map.observe(function (event2) {
+
+                                            (function (event2) {
+                                                if (event2.type !== 'delete') {
+                                                    var property = event2.name;
+                                                    var value = event2.object.contents[property];
+                                                    var container = document.getElementById(event.name);
+
+                                                    if (container) {
+                                                        var options = {};
+                                                        options[property] = value;
+                                                        container.update(options, true);
+                                                    }
                                                 }
-
-                                            });
+                                            })(event2);
 
                                         });
-                                    }
-                                    catch (e) {
 
-                                    }
+                                    });
                                 }
-
-                                else if (event.type === 'delete') {
-                                    var node = document.getElementById(event.name);
-                                    if (node) {
-                                        node.remove(true);
-                                    }
+                                catch (e) {
 
                                 }
-                            })(event);
-                        }
+                            }
+
+                            else if (event.type === 'delete') {
+                                var node = document.getElementById(event.name);
+                                if (node) {
+                                    node.remove(true);
+                                }
+
+                            }
+                        })(event);
                     });
 
                 },                

@@ -175,7 +175,6 @@ Example:
      <script src="../y-text/y-text.js"></script>
 
     <script src="../y-websockets-client/y-websockets-client.js"></script>
-    <!--<script src="y-websockets-client.js"></script>-->
     
 
     <script src="../gsap/src/minified/TweenLite.min.js"></script>
@@ -661,7 +660,7 @@ Example:
                         var canvas = self.$$('#canvas-container');
                         canvas.pan(2, 2);
                        
-                        yjs.share.project.observe(function (events) {
+                        yjs.share.project.observe(function (event) {
                             self.loaded = true;
                             var code = yjs.share.project.get('code') || '';
                             // var input = yjs.share.project.get('input') || {};

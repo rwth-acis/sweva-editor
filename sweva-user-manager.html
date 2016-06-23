@@ -303,46 +303,43 @@
 
                     this.ownId = userId;
 
-                    yjs.share.users.observe(function (events) {
+                    yjs.share.users.observe(function (event) {
 
-                        for (var i = 0; i < events.length; i++) {
-                            var event = events[i];
-                            (function (event) {
+                        (function (event) {
 
-                                if (event.type === 'add') {
-                                    // console.log('eventuser', event.name, event.type);
+                            if (event.type === 'add') {
+                                // console.log('eventuser', event.name, event.type);
 
-                                    // console.log(yjs.share.users);
-                                    //console.log(Object.keys(yjs.share.users.opContents));
-                                    try {
-                                        yjs.share.users.get(event.name).then(function (map) {
+                                // console.log(yjs.share.users);
+                                //console.log(Object.keys(yjs.share.users.opContents));
+                                try {
+                                    yjs.share.users.get(event.name).then(function (map) {
+                                        var cursor = map.get('cursor');
+                                        var color = map.get('color');
+                                        var name = map.get('name');
+                                        self.add(event.name, { name: name, color: color, cursor: cursor }, true);
+
+                                        map.observe(function () {
+
                                             var cursor = map.get('cursor');
                                             var color = map.get('color');
-                                            var name = map.get('name');                                            
-                                            self.add(event.name, { name: name, color: color, cursor: cursor }, true);
-
-                                            map.observe(function () {
-
-                                                var cursor = map.get('cursor');
-                                                var color = map.get('color');
-                                                var name = map.get('name');
-                                                var selectedNode = map.get('selectedNode');
-                                                if (!self.users.hasOwnProperty(event.name)) {
-                                                    self.add(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
-                                                }
-                                                self.update(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
-                                            });
+                                            var name = map.get('name');
+                                            var selectedNode = map.get('selectedNode');
+                                            if (!self.users.hasOwnProperty(event.name)) {
+                                                self.add(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
+                                            }
+                                            self.update(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
                                         });
-                                    } catch (e) {
-
-                                    }
+                                    });
+                                } catch (e) {
 
                                 }
-                                else if (event.type === 'delete') {
-                                    self.deleteUser(event.name, true);
-                                }
-                            })(event)
-                        }
+
+                            }
+                            else if (event.type === 'delete') {
+                                self.deleteUser(event.name, true);
+                            }
+                        })(event)
                     });
 
                     this.add(this.ownId, { name: userName , color: userColor});
