@@ -7,6 +7,7 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="../paper-input/paper-textarea.html">
+<link rel="import" href="../file-input/file-input.html">
 
 <link rel="import" href="../paper-toggle-button/paper-toggle-button.html">
 
@@ -102,6 +103,7 @@
                     <option value="toggle">Toggle</option>
                     <option value="dropdown">Dropdown</option>
                     <option value="fixed">Fixed Value</option>
+                    <option value="file">File</option>
                 </select>
             </div>
 
@@ -115,6 +117,7 @@
                                  on-iron-change="toggleButtonValueChanged">
                 {{toggleButtonValue}}
             </paper-toggle-button>
+            <paper-input hidden$="{{!showElement('file',type)}}" id="file" type ="file" label="file" on-change="loadFile" data-parent="this"></paper-input>
             <paper-input hidden$="{{!showElement('min',type)}}" id="min" type="number" label="Min" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
             <paper-input hidden$="{{!showElement('max',type)}}" id="max" type="number" label="Max" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
             <paper-textarea hidden$="{{!showElement('items',type)}}" id="items" label="Items , Separated" value="" on-input="handleInputChanged" data-parent="this"></paper-textarea>
@@ -215,6 +218,7 @@
                             map.set('max', self.$$('#max').value || '');
                             map.set('items', self.$$('#items').value || '');
                             map.set('description', self.$$('#description').value || '');
+                            map.set('file', self.$$('#file').value || '');
 
                             map.set('position', { x: self.posX, y: self.posY });
 
@@ -228,7 +232,7 @@
                             self.updatePos(event.el.offsetLeft, event.el.offsetTop);
                         }
                     });
-                   
+
                     this.updatePos();
                     this.endpoint = this.jsPlumbInstance.addEndpoint(this.id, this.jsPlumbStyles.inputEndpoint, {
                         anchor: [1, 0, 1, -1],
@@ -238,7 +242,7 @@
                 },
                 contextMenu: function (action) {
 
-                    
+
                     if (action == 'delete') {
                         this.remove();
                     }
@@ -252,7 +256,7 @@
 
 
 
-                    var items = [                       
+                    var items = [
                         { title: 'Delete', fn: current.contextMenu.bind(current, 'delete') }
                     ];
 
@@ -462,13 +466,19 @@
                             break;
                         case 'dropdown':
                             result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;       
+                            result.description = this.$$('#description').value;
                             var items = this.$$('#items');
                             result.items = (typeof items.value === 'string') ? items.value.split(',') : items.value;
                             break;
                         case 'fixed':
                             result.description = this.$$('#description').value;
                             result.value = this.$$('#multilinevalue').value;
+                            break;
+                        case 'file':
+                            result.label = this.$$('#label').value;
+                            result.description = this.$$('#description').value;
+                            result.value = this.$$('#file').addEventListener('change', handleFileSelect(), false);
+
                             break;
                         default:
 
@@ -498,6 +508,23 @@
                     }
 
                     return result;
+                },
+
+
+              handleFileSelect: function(event){
+                var file = event.target.files[0];
+
+
+                var reader = new FileReader();
+                reader.onloadend = function(progressEvent){
+                  // Entire file
+                  //console.log(this.result);
+                  return res = this.result;
+                  //console.log(value);
+                  //map.set(element.id + '', value);
+                  console.log(value);
+                };
+                reader.readAsText(file, 'utf-8');
                 },
 
                 toggleButtonValueChanged: function (event) {
@@ -542,6 +569,9 @@
                         case 'fixed':
                             this.style.backgroundColor = '#111';
                             break;
+                        case 'file':
+                            this.style.backgroundColor = '#00802b';
+                            break;
 
                         default:
 
@@ -570,6 +600,8 @@
                             return (['label', 'description', 'items'].indexOf(element) >= 0);
                         case 'fixed':
                             return (['description', 'multilinevalue'].indexOf(element) >= 0);
+                        case 'file':
+                            return (['label', 'description', 'file'].indexOf(element) >= 0);
 
                         default:
                             return false;
@@ -583,6 +615,31 @@
                         map.set('index', self.indexPos);
                     });
                 },
+
+
+              loadFile: function(event){
+                  /*var element = event.target;
+                  //document.getElementById('file').onchange = function(){
+
+                  var file = element.files[0];
+
+                  //var file = this.$$('input[type="file"]');
+                //var file = element.file.files[0];
+                 //var file = document.querySelector('input#input.style-scope.paper-input').files[0];
+
+                  var reader = new FileReader();
+                  reader.onload = function(progressEvent){
+                    // Entire file
+                    console.log(this.result);
+                    var content = this.result;
+                  };
+                  reader.readAsText(file, 'utf-8');
+
+                element.value = content;*/
+                  //};
+                this.updateYjs(event.target);
+              },
+
                 handleInputChanged: function (event) {
                     if (event.target == null) {
                         return;
@@ -672,12 +729,39 @@
 
                             var value;
                             if (element.id == 'booleanvalue') {
-                                value = element.checked;
+                              value = element.checked;
+                              map.set(element.id + '', value);
+                            }
+                            else if (element.type == 'file'){
+                              //var element = event.target;
+                              //document.getElementById('file').onchange = function(){
+
+                              var file = element.files[0];
+
+                              //var file = this.$$('input[type="file"]');
+                              //var file = element.file.files[0];
+                              //var file = document.querySelector('input#input.style-scope.paper-input').files[0];
+
+                              var reader = new FileReader();
+                              reader.onloadend = function(progressEvent){
+                                // Entire file
+                                //console.log(this.result);
+                                value = this.result;
+                                console.log(value);
+                                map.set(element.id + '', value);
+                                console.log(value);
+                              };
+                              reader.readAsText(file, 'utf-8');
+                              //element.value = content;
+                              //};
                             }
                             else {
                                 value = element.value;
+                              map.set(element.id + '', value);
                             }
-                            map.set(element.id + '', value);
+                            //map.set(element.id + '', value);
+                            //console.log(value);
+                            console.log(element.id);
 
                         });
                     }
@@ -694,6 +778,19 @@
                         });
                     }
                 },
+
+
+
+
+
+
+
+
+
+
+
+
+
                 update: function (options, fromYjs) {
 
                     if (typeof options === 'object') {
@@ -703,7 +800,7 @@
 
                                 if (key == 'index') {
                                     if (this.indexPos != options.index) {
-                                        this.indexPos = options.index;                                        
+                                        this.indexPos = options.index;
                                     }
                                 }
                                 else if (key == 'booleanvalue') {
@@ -742,6 +839,18 @@
                                             case 'fixed':
                                                 var element = this.$$('#multilinevalue');
                                                 element.value = options[key];
+                                                break;
+                                            case 'file':
+                                                var element = this.$$('#file');
+                                                element.value = options[key];
+                                                /*var value = element.files[0];
+
+                                              //var targetFile = inputFile.files[0];
+                                              var reader = new FileReader();
+                                              reader.onload = function(e) {
+                                                var text = reader.result;
+                                              }
+                                              reader.readAsText(element.value, 'utf-8');*/
                                             default:
 
                                         }
@@ -755,7 +864,7 @@
                                 }
                                 else if (key == 'position') {
                                     this.updatePos( options[key].x , options[key].y, fromYjs);
-                                }                               
+                                }
                                 else {
                                     var element = this.$$('#' + key);
                                     if (element && element.value != options[key]) {
