@@ -616,19 +616,16 @@
                     }
                     else {
                        
-                        self.yjs.share.nodes.get(self.id).then(function (map) {
-                            var text = map.get('sharedCode' + self.id);
-                            
-                            if (text && text.then) {
-                               
-                                text.then(function (shared) {
-                                    self.sharedCode = shared;
-                                    self.fire('nodecreated', self);
-                                });                                
-                            }
-                            
-                                
-                        });
+                        var map = self.yjs.share.nodes.get(self.id);
+                        var text = map.get('sharedCode' + self.id);
+
+                        if (text && text.then) {
+
+                            text.then(function (shared) {
+                                self.sharedCode = shared;
+                                self.fire('nodecreated', self);
+                            });
+                        }
                         
                     }
                     
@@ -918,9 +915,8 @@
                         if (typeof fromYjs === 'undefined' || fromYjs == false) {
                             if (this.yjs) {
                                 code = this.code;
-                                this.yjs.share.nodes.get(this.id).then(function (map) {
-                                    map.set('code', code);
-                                });
+                                var map = this.yjs.share.nodes.get(this.id);
+                                map.set('code', code);
                             }
                         }
 
@@ -1004,11 +1000,8 @@
 
                         if (this.yjs) {
                             var self = this;
-                            this.yjs.share.nodes.get(this.id).then(function (map) {
-
-                                map.set('alias', self.alias);
-
-                            });
+                            var map = this.yjs.share.nodes.get(this.id);
+                            map.set('alias', self.alias);
                         }
                     }, 500);
 
@@ -1029,14 +1022,10 @@
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
                         if (this.yjs) {
                             var self = this;
-                            var get = this.yjs.share.nodes.get(this.id);
+                            var map = this.yjs.share.nodes.get(this.id);
 
-                            if (get) {
-                                get.then(function (map) {
-
-                                    map.set('position', { x: self.posX, y: self.posY });
-
-                                });
+                            if (map) {
+                                map.set('position', { x: self.posX, y: self.posY });
                             }
                            
                         }

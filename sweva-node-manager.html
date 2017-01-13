@@ -732,7 +732,7 @@
                             if (event.type === 'add' && event.object.opContents.hasOwnProperty(event.name)) {
 
                                 try {
-                                    yjs.share.nodes.get(event.name).then(function (map) {
+                                    var map = yjs.share.nodes.get(event.name);
 
                                         var position = map.get('position') || { x: 0, y: 0 };
                                         var alias = map.get('alias') || 'node';
@@ -764,57 +764,55 @@
 
                                         map.observe(function (event2) {
 
-                                            var position = map.get('position');
-                                            var alias = map.get('alias');
-                                            var code = map.get('code');
-                                            var fixed = map.get('fixed');
+                                        var position = map.get('position');
+                                        var alias = map.get('alias');
+                                        var code = map.get('code');
+                                        var fixed = map.get('fixed');
 
 
-                                            if (position != null && code != null && alias != null) {//prevent randomly inserting nodes at 0 0
+                                        if (position != null && code != null && alias != null) {//prevent randomly inserting nodes at 0 0
 
-                                                var node = document.getElementById(event.name);
+                                            var node = document.getElementById(event.name);
 
 
-                                                if (!node) {
-                                                    return;
+                                            if (!node) {
+                                                return;
+                                            }
+
+                                            if (!node.sharedCode) {
+
+                                                var text = map.get('sharedCode' + node.id);
+
+                                                if (text && text.then) {
+                                                    text.then(function (shared) {
+                                                        node.sharedCode = shared;
+                                                        node.fire('nodecreated', node);
+                                                    });
                                                 }
 
-                                                if (!node.sharedCode) {
-
-                                                    var text = map.get('sharedCode' + node.id);
-
-                                                    if (text && text.then) {
-                                                        text.then(function (shared) {
-                                                            node.sharedCode = shared;
-                                                            node.fire('nodecreated', node);
-                                                        });
-                                                    }
-
-
-                                                }
-                                                //node.jsPlumbInstance = self.jsPlumbInstance;
-                                                if (node.alias != alias) {
-                                                    node.alias = alias;
-                                                }
-                                                if (node.code != code) {
-                                                    node.updateCode(code, true);
-                                                }
-                                                if (typeof fixed !== 'undefined' && node.fixed != fixed) {
-                                                    node.fixed = fixed;
-                                                }
-
-                                                if (node.posX != position.x
-                                                    || node.posY != position.y) {
-                                                    node.animatePos(position.x, position.y, true);
-
-
-                                                }
 
                                             }
-                                        });
+                                            //node.jsPlumbInstance = self.jsPlumbInstance;
+                                            if (node.alias != alias) {
+                                                node.alias = alias;
+                                            }
+                                            if (node.code != code) {
+                                                node.updateCode(code, true);
+                                            }
+                                            if (typeof fixed !== 'undefined' && node.fixed != fixed) {
+                                                node.fixed = fixed;
+                                            }
+
+                                            if (node.posX != position.x
+                                                || node.posY != position.y) {
+                                                node.animatePos(position.x, position.y, true);
 
 
+                                            }
+
+                                        }
                                     });
+
                                 }
                                 catch (e) {
                                     console.log('not found');
@@ -844,41 +842,40 @@
 
                             if (event.type === 'add') {
                                 try {
-                                    yjs.share.edges.get(event.name).then(function (map) {
+                                    var map = yjs.share.edges.get(event.name);
+                                    var source = map.get('source') || '';
+                                    var target = map.get('target') || '';
+                                    var sourceEndpoint = map.get('sourceEndpoint') || '';
+                                    var targetEndpoint = map.get('targetEndpoint') || '';
+
+                                    if (source && target && sourceEndpoint && targetEndpoint) {
+
+                                        self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
+                                        var node = document.getElementById(source);
+                                        //
+                                        if (node) {
+
+                                            node.addConnection(sourceEndpoint, target, targetEndpoint, true);
+
+                                        }
+
+                                    }
+
+                                    map.observe(function (event2) {
+                                        //console.log('edges', events2);
                                         var source = map.get('source') || '';
                                         var target = map.get('target') || '';
                                         var sourceEndpoint = map.get('sourceEndpoint') || '';
                                         var targetEndpoint = map.get('targetEndpoint') || '';
-
                                         if (source && target && sourceEndpoint && targetEndpoint) {
-
                                             self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
                                             var node = document.getElementById(source);
-                                            //
                                             if (node) {
 
                                                 node.addConnection(sourceEndpoint, target, targetEndpoint, true);
 
                                             }
-
                                         }
-
-                                        map.observe(function (event2) {
-                                            //console.log('edges', events2);
-                                            var source = map.get('source') || '';
-                                            var target = map.get('target') || '';
-                                            var sourceEndpoint = map.get('sourceEndpoint') || '';
-                                            var targetEndpoint = map.get('targetEndpoint') || '';
-                                            if (source && target && sourceEndpoint && targetEndpoint) {
-                                                self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
-                                                var node = document.getElementById(source);
-                                                if (node) {
-
-                                                    node.addConnection(sourceEndpoint, target, targetEndpoint, true);
-
-                                                }
-                                            }
-                                        });
                                     });
                                 }
                                 catch (e) {

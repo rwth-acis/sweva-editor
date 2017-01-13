@@ -95,75 +95,74 @@
 
                             if (event.type === 'add') {
                                 try {
-                                    self.yjs.share.mapperContainers.get(event.name).then(function (map) {
+                                    var map = self.yjs.share.mapperContainers.get(event.name);
 
-                                        var index = map.get('index') || -1;
-                                        var type = map.get('type') || '';
-                                        var label = map.get('label') || '';
-                                        var stringvalue = map.get('stringvalue') || '';
-                                        var multilinevalue = map.get('multilinevalue') || '';
-                                        var numbervalue = map.get('numbervalue') || '';
-                                        var booleanvalue = map.get('booleanvalue') || '';
-                                        var min = map.get('min') || '';
-                                        var max = map.get('max') || '';
-                                        var items = map.get('items') || '';
-                                        var description = map.get('description') || '';
+                                    var index = map.get('index') || -1;
+                                    var type = map.get('type') || '';
+                                    var label = map.get('label') || '';
+                                    var stringvalue = map.get('stringvalue') || '';
+                                    var multilinevalue = map.get('multilinevalue') || '';
+                                    var numbervalue = map.get('numbervalue') || '';
+                                    var booleanvalue = map.get('booleanvalue') || '';
+                                    var min = map.get('min') || '';
+                                    var max = map.get('max') || '';
+                                    var items = map.get('items') || '';
+                                    var description = map.get('description') || '';
 
-                                        var position = map.get('position') || { x: 10, y: 10 };
+                                    var position = map.get('position') || { x: 10, y: 10 };
 
 
-                                        var container = document.getElementById(event.name);
+                                    var container = document.getElementById(event.name);
 
-                                        if (!container) {
-                                            container = self.add({
-                                                id: event.name,
-                                                type: type,
-                                                index: index,
-                                                label: label,
-                                                stringvalue: stringvalue,
-                                                multilinevalue: multilinevalue,
-                                                numbervalue: numbervalue,
-                                                booleanvalue: booleanvalue,
-                                                min: min,
-                                                max: max,
-                                                items: items,
-                                                description: description,
-                                                position: position
+                                    if (!container) {
+                                        container = self.add({
+                                            id: event.name,
+                                            type: type,
+                                            index: index,
+                                            label: label,
+                                            stringvalue: stringvalue,
+                                            multilinevalue: multilinevalue,
+                                            numbervalue: numbervalue,
+                                            booleanvalue: booleanvalue,
+                                            min: min,
+                                            max: max,
+                                            items: items,
+                                            description: description,
+                                            position: position
 
-                                            }, true);
+                                        }, true);
 
-                                        }
+                                    }
 
-                                        var nodes = self.querySelectorAll('sweva-input-container');
+                                    var nodes = self.querySelectorAll('sweva-input-container');
 
-                                        for (var k = 0; k < nodes.length; k++) {
-                                            nodes[k].updateConnections();
-                                        }
+                                    for (var k = 0; k < nodes.length; k++) {
+                                        nodes[k].updateConnections();
+                                    }
 
-                                        nodes = self.querySelectorAll('sweva-node');
-                                        for (var k = 0; k < nodes.length; k++) {
-                                            nodes[k].updateConnections();
-                                        }
-                                        self.jsPlumbInstance.repaintEverything();
-                                        map.observe(function (event2) {
+                                    nodes = self.querySelectorAll('sweva-node');
+                                    for (var k = 0; k < nodes.length; k++) {
+                                        nodes[k].updateConnections();
+                                    }
+                                    self.jsPlumbInstance.repaintEverything();
+                                    map.observe(function (event2) {
 
-                                            (function (event2) {
-                                                if (event2.type !== 'delete') {
-                                                    var property = event2.name;
-                                                    var value = event2.object.contents[property];
-                                                    var container = document.getElementById(event.name);
+                                        (function (event2) {
+                                            if (event2.type !== 'delete') {
+                                                var property = event2.name;
+                                                var value = event2.object.contents[property];
+                                                var container = document.getElementById(event.name);
 
-                                                    if (container) {
-                                                        var options = {};
-                                                        options[property] = value;
-                                                        container.update(options, true);
-                                                    }
+                                                if (container) {
+                                                    var options = {};
+                                                    options[property] = value;
+                                                    container.update(options, true);
                                                 }
-                                            })(event2);
-
-                                        });
+                                            }
+                                        })(event2);
 
                                     });
+
                                 }
                                 catch (e) {
 

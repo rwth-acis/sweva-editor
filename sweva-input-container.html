@@ -578,10 +578,8 @@
 
                 handleIndexChanged: function (event) {
                     this.indexPos = event.target.value;
-                    var self = this;
-                    self.yjs.share.mapperContainers.get(self.id).then(function (map) {
-                        map.set('index', self.indexPos);
-                    });
+                    var map = this.yjs.share.mapperContainers.get(this.id);
+                    map.set('index', this.indexPos);
                 },
                 handleInputChanged: function (event) {
                     if (event.target == null) {
@@ -644,7 +642,6 @@
                         isSource: true,
                         connector: ["Bezier"],
                         connectorStyle: connectorPaintStyle,
-                        hoverPaintStyle: inputEndpointHoverStyle,
                         connectorHoverStyle: connectorHoverStyle,
                         dragOptions: {},
                     }
@@ -666,20 +663,18 @@
                         return;
                     }
 
-                    var self = this;
                     try {
-                        this.yjs.share.mapperContainers.get(this.id).then(function (map) {
+                        var map = this.yjs.share.mapperContainers.get(this.id);
 
-                            var value;
-                            if (element.id == 'booleanvalue') {
-                                value = element.checked;
-                            }
-                            else {
-                                value = element.value;
-                            }
-                            map.set(element.id + '', value);
+                        var value;
+                        if (element.id == 'booleanvalue') {
+                            value = element.checked;
+                        } else {
+                            value = element.value;
+                        }
 
-                        });
+                        map.set(element.id + '', value);
+
                     }
                     catch (e) {
 
@@ -689,9 +684,8 @@
                 updateIndex: function (index) {
                     if (this.index != index) {
                         this.index = index;
-                        this.yjs.share.mapperContainers.get(this.id).then(function (map) {
-                            map.set('index', index);
-                        });
+                        var map = this.yjs.share.mapperContainers.get(this.id);
+                        map.set('index', index);
                     }
                 },
                 update: function (options, fromYjs) {
@@ -786,13 +780,10 @@
                     this.repaint();
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
                         if (this.yjs) {
-                            var self = this;
-                            var get = this.yjs.share.mapperContainers.get(this.id);
+                            var map = this.yjs.share.mapperContainers.get(this.id);
 
-                            if (get) {
-                                get.then(function (map) {
-                                    map.set('position', { x: self.posX, y: self.posY });
-                                });
+                            if (map) {
+                                map.set('position', { x: this.posX, y: this.posY });
                             }
 
                         }

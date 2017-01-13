@@ -313,23 +313,22 @@
                                 // console.log(yjs.share.users);
                                 //console.log(Object.keys(yjs.share.users.opContents));
                                 try {
-                                    yjs.share.users.get(event.name).then(function (map) {
+                                    var map = yjs.share.users.get(event.name);
+                                    var cursor = map.get('cursor');
+                                    var color = map.get('color');
+                                    var name = map.get('name');
+                                    self.add(event.name, { name: name, color: color, cursor: cursor }, true);
+
+                                    map.observe(function () {
+
                                         var cursor = map.get('cursor');
                                         var color = map.get('color');
                                         var name = map.get('name');
-                                        self.add(event.name, { name: name, color: color, cursor: cursor }, true);
-
-                                        map.observe(function () {
-
-                                            var cursor = map.get('cursor');
-                                            var color = map.get('color');
-                                            var name = map.get('name');
-                                            var selectedNode = map.get('selectedNode');
-                                            if (!self.users.hasOwnProperty(event.name)) {
-                                                self.add(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
-                                            }
-                                            self.update(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
-                                        });
+                                        var selectedNode = map.get('selectedNode');
+                                        if (!self.users.hasOwnProperty(event.name)) {
+                                            self.add(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
+                                        }
+                                        self.update(event.name, { name: name, color: color, cursor: cursor, selectedNode: selectedNode }, true);
                                     });
                                 } catch (e) {
 
@@ -443,21 +442,20 @@
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
                         try {
 
-                            this.yjs.share.users.get(id).then(function (map) {
+                            var map = this.yjs.share.users.get(id);
 
-                                if (nameUpdated) {
-                                    map.set('name', name);
-                                }
-                                if (colorUpdated) {
-                                    map.set('color', color);
-                                }
-                                if (cursorUpdated) {
-                                    map.set('cursor', { x: cursor.x, y: cursor.y });
-                                }
-                                if (selectedNodeUpdated) {
-                                    map.set('selectedNode', selectedNode);
-                                }
-                            });
+                            if (nameUpdated) {
+                                map.set('name', name);
+                            }
+                            if (colorUpdated) {
+                                map.set('color', color);
+                            }
+                            if (cursorUpdated) {
+                                map.set('cursor', { x: cursor.x, y: cursor.y });
+                            }
+                            if (selectedNodeUpdated) {
+                                map.set('selectedNode', selectedNode);
+                            }
                         }
                         catch (e) {
                             this.yjs.share.users.set(id, Y.Map).then(function (map) {
