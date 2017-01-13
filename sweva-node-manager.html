@@ -613,14 +613,11 @@
                                     //console.log('moved', info.originalSourceEndpoint.getUuid(), info.originalTargetEndpoint.getUuid());
 
                                     self.yjs.share.edges.delete(info.originalSourceEndpoint.getUuid() + info.originalTargetEndpoint.getUuid());
-                                    self.yjs.share.edges.set(info.newSourceEndpoint.getUuid() + info.newTargetEndpoint.getUuid(), Y.Map).then(function (map) {
-
-                                        map.set('source', info.originalSourceId);
-                                        map.set('target', info.newTargetId);
-                                        map.set('sourceEndpoint', info.newSourceEndpoint.getUuid());
-                                        map.set('targetEndpoint', info.newTargetEndpoint.getUuid());
-
-                                    });
+                                    var map = self.yjs.share.edges.set(info.newSourceEndpoint.getUuid() + info.newTargetEndpoint.getUuid(), Y.Map);
+                                    map.set('source', info.originalSourceId);
+                                    map.set('target', info.newTargetId);
+                                    map.set('sourceEndpoint', info.newSourceEndpoint.getUuid());
+                                    map.set('targetEndpoint', info.newTargetEndpoint.getUuid());
 
                                 }
                                 self.wasMoved = true;
@@ -783,13 +780,10 @@
 
                                                 var text = map.get('sharedCode' + node.id);
 
-                                                if (text && text.then) {
-                                                    text.then(function (shared) {
-                                                        node.sharedCode = shared;
-                                                        node.fire('nodecreated', node);
-                                                    });
+                                                if (text) {
+                                                    node.sharedCode = text;
+                                                    node.fire('nodecreated', node);
                                                 }
-
 
                                             }
                                             //node.jsPlumbInstance = self.jsPlumbInstance;

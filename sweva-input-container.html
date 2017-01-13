@@ -202,26 +202,22 @@
                     var self = this;
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
 
-                        self.yjs.share.mapperContainers.set(self.id, Y.Map).then(function (map) {
+                        var map = self.yjs.share.mapperContainers.set(self.id, Y.Map);
 
-                            map.set('index', self.indexPos);
-                            map.set('type', self.$$('#type').value || '');
-                            map.set('label', self.$$('#label').value || '');
-                            map.set('stringvalue', self.$$('#stringvalue').value || '');
-                            map.set('multilinevalue', self.$$('#multilinevalue').value || '');
-                            map.set('numbervalue', self.$$('#numbervalue').value || '');
-                            map.set('booleanvalue', self.$$('#booleanvalue').checked || '');
-                            map.set('min', self.$$('#min').value || '');
-                            map.set('max', self.$$('#max').value || '');
-                            map.set('items', self.$$('#items').value || '');
-                            map.set('description', self.$$('#description').value || '');
+                        map.set('index', self.indexPos);
+                        map.set('type', self.$$('#type').value || '');
+                        map.set('label', self.$$('#label').value || '');
+                        map.set('stringvalue', self.$$('#stringvalue').value || '');
+                        map.set('multilinevalue', self.$$('#multilinevalue').value || '');
+                        map.set('numbervalue', self.$$('#numbervalue').value || '');
+                        map.set('booleanvalue', self.$$('#booleanvalue').checked || '');
+                        map.set('min', self.$$('#min').value || '');
+                        map.set('max', self.$$('#max').value || '');
+                        map.set('items', self.$$('#items').value || '');
+                        map.set('description', self.$$('#description').value || '');
 
-                            map.set('position', { x: self.posX, y: self.posY });
-
-                        });
-
+                        map.set('position', { x: self.posX, y: self.posY });
                     }
-
 
                     this.jsPlumbInstance.draggable(this, {
                         stop: function (event) {
@@ -336,14 +332,12 @@
                         var self = this;
                         if (typeof fromYjs === 'undefined' || fromYjs == false) {
 
-                            this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map).then(function (map) {
+                            var map = this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map);
 
-                                map.set('source', self.id);
-                                map.set('target', targetId);
-                                map.set('sourceEndpoint', sourceEndpointId);
-                                map.set('targetEndpoint', targetEndpointId);
-
-                            });
+                            map.set('source', self.id);
+                            map.set('target', targetId);
+                            map.set('sourceEndpoint', sourceEndpointId);
+                            map.set('targetEndpoint', targetEndpointId);
                         }
                     }
 

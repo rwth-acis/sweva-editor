@@ -286,14 +286,11 @@
                         var self = this;
                         if (typeof fromYjs === 'undefined' || fromYjs == false) {
 
-                            this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map).then(function (map) {
-
-                                map.set('source', self.id);
-                                map.set('target', targetId);
-                                map.set('sourceEndpoint', sourceEndpointId);
-                                map.set('targetEndpoint', targetEndpointId);
-
-                            });
+                            var map = this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map);
+                            map.set('source', self.id);
+                            map.set('target', targetId);
+                            map.set('sourceEndpoint', sourceEndpointId);
+                            map.set('targetEndpoint', targetEndpointId);
                         }
                     }
                    
@@ -596,35 +593,27 @@
                     self.yjs = yjs;
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
 
-                        yjs.share.nodes.set(self.id, Y.Map).then(function (map) {
+                        var map = yjs.share.nodes.set(self.id, Y.Map);
 
-                            map.set('position', { x: self.posX, y: self.posY });
-                            map.set('alias', self.alias);
-                            map.set('code', self.code);
-                            map.set('fixed', self.fixed);
-                            map.set('sharedCode' + self.id, Y.Text).then(function (text) {
+                        map.set('position', { x: self.posX, y: self.posY });
+                        map.set('alias', self.alias);
+                        map.set('code', self.code);
+                        map.set('fixed', self.fixed);
+                        var text = map.set('sharedCode' + self.id, Y.Text);
+                        self.sharedCode = text;
+                        text.insert(0, code);
+                        self.fire('nodecreated', self);
 
-                                self.sharedCode = text;
-                                text.insert(0, code);                               
-                                self.fire('nodecreated', self);
-                            });
-                            
-                            
-                        });
                         this.updatePos();
 
-                    }
-                    else {
+                    } else {
                        
                         var map = self.yjs.share.nodes.get(self.id);
                         var text = map.get('sharedCode' + self.id);
 
-                        if (text && text.then) {
-
-                            text.then(function (shared) {
-                                self.sharedCode = shared;
-                                self.fire('nodecreated', self);
-                            });
+                        if (text) {
+                            self.sharedCode = text;
+                            self.fire('nodecreated', self);
                         }
                         
                     }

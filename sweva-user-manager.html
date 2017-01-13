@@ -363,13 +363,10 @@
                     this.users[id] = { id: id, name: name, color: color, cursor: cursor, isSelf: (id == this.ownId) };
 
                     if (typeof fromYjs === 'undefined' || fromYjs == false) {
-
-                        this.yjs.share.users.set(id, Y.Map).then(function (map) {
-                            map.set('name', name);
-                            map.set('color', color);
-                            map.set('cursor', { x: cursor.x, y: cursor.y });
-
-                        });
+                        var map = this.yjs.share.users.set(id, Y.Map);
+                        map.set('name', name);
+                        map.set('color', color);
+                        map.set('cursor', { x: cursor.x, y: cursor.y });
                     }
                     this.users[id].lastUpdate = Date.now();
                     this.fire('useradded', this.users[id]);
@@ -458,12 +455,11 @@
                             }
                         }
                         catch (e) {
-                            this.yjs.share.users.set(id, Y.Map).then(function (map) {
-                                map.set('name', name);
-                                map.set('color', color);
-                                map.set('cursor', { x: cursor.x, y: cursor.y });
-                                map.set('selectedNode', '');
-                            });
+                            var map = this.yjs.share.users.set(id, Y.Map);
+                            map.set('name', name);
+                            map.set('color', color);
+                            map.set('cursor', { x: cursor.x, y: cursor.y });
+                            map.set('selectedNode', '');
                         }
                     }
                     var updatedObject = {};
