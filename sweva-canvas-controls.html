@@ -17,9 +17,9 @@
             }
 
             paper-icon-button {
-               
 
-                
+
+
                 border: none;
                 margin-left: auto;
                 margin-right: auto;
@@ -78,21 +78,23 @@
                         }
                     }
                 }
-                ready() {}
+                ready() {
+                    super.ready();
+                }
 
                 handleCenterClick(event) {
-                    this.dispatchEvent(new CustomEvent('centerclick', { bubbles: true, composed: true }));
+                    this.dispatchEvent(new CustomEvent('centerclick', { bubbles: true, composed: true , detail:{} }));
                 }
 
                 handleZoomInClick(event) {
-                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, delta: 1 }));
+                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, detail:{delta: 1}  }));
                 }
                 handleZoomOutClick(event) {
-                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, delta: -1 }));
+                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, detail:{delta: -1} }));
                 }
                 handleZoomSlider(event) {
-                    var value = this.$$('#zoom-slider').value;
-                    this.dispatchEvent(new CustomEvent('zoomslide', { bubbles: true, composed: true, value: value }));
+                    var value = this.shadowRoot.querySelector('#zoom-slider').value;
+                    this.dispatchEvent(new CustomEvent('zoomslide', { bubbles: true, composed: true, detail:{value: value }}));
                 }
                 adjustZoomSlider(zoom) {
                     if (this.zoomValue != zoom) {
