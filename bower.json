@@ -5,8 +5,7 @@
     "Anonymous <anonymous@example.com>"
   ],
   "description": "An element providing a solution to no problem in particular.",
-  "keywords": [
-  ],
+  "keywords": [],
   "main": "sweva-editor.html",
   "license": "",
   "homepage": "",
@@ -15,11 +14,7 @@
     "/test/"
   ],
   "dependencies": {
-    "polymer": "Polymer/polymer#^1.2.0",
-    "paper-menu": "PolymerElements/paper-menu#^1.2.2",
-    "iron-elements": "PolymerElements/iron-elements#^1.0.8",
-    "paper-elements": "PolymerElements/paper-elements#^1.0.7",
-    "marked-element": "PolymerElements/marked-element#^1.1.2",
+    "polymer": "Polymer/polymer#^2.0.0",
     "jsplumb": "2.1.0",
     "yjs": "^12.1.4",
     "y-memory": "^8.0.7",
@@ -28,17 +23,38 @@
     "y-array": "^10.0.6",
     "y-websockets-client": "^8.0.15",
     "dagre": "0.7.4",
-    "graphlib": "2.0.0",
-    "paper-color-picker": "https://github.com/AlexRuppert/paper-color-picker.git#float-offset-fix",
+    "graphlib": "^2.0.0",
     "axios": "0.8.1",
     "download-as-file": "https://github.com/bahmutov/download-as-file.git",
     "basicContext": "*",
     "ace-builds": "^1.2.2",
     "esprima": "^2.0.0",
-    "gsap": "https://github.com/greensock/GreenSock-JS.git"
+    "gsap": "https://github.com/greensock/GreenSock-JS.git",
+    "iron-icons": "PolymerElements/iron-icons#^2.0.1",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^2.0.1",
+    "paper-input": "PolymerElements/paper-input#^2.0.2",
+    "paper-dialog": "PolymerElements/paper-dialog#^2.0.0",
+    "paper-button": "PolymerElements/paper-button#^2.0.0",
+    "paper-spinner": "PolymerElements/paper-spinner#^2.0.0",
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^2.0.0",
+    "paper-listbox": "PolymerElements/paper-listbox#^2.0.0",
+    "paper-item": "PolymerElements/paper-item#^2.0.0",
+    "paper-tooltip": "PolymerElements/paper-tooltip#^2.0.1",
+    "marked-element": "PolymerElements/marked-element#^2.3.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^2.0.5",
+    "paper-tabs": "PolymerElements/paper-tabs#^2.0.0",
+    "iron-pages": "PolymerElements/iron-pages#^2.0.0",
+    "paper-progress": "PolymerElements/paper-progress#^2.0.1",
+    "iron-icon": "PolymerElements/iron-icon#^2.0.1",
+    "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.1",
+    "paper-card": "PolymerElements/paper-card#^2.0.0",
+    "iron-component-page": "PolymerElements/iron-component-page#^3.0.1"
   },
   "devDependencies": {
-    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
-    "web-component-tester": "^4.0.0"
+    "web-component-tester": "^6.0.0"
+  },
+  "resolutions": {
+    "graphlib": "^2.0.0",
+    "lodash": "^4.11.1"
   }
 }
