@@ -54,47 +54,99 @@
        
     </template>
     <script>
-        (function () {
-            'use strict';
+        if(Polymer.Element){
+            //version 2 code
+            class SwevaCanvasControls extends Polymer.Element {
+                static get is() {
+                    return 'sweva-canvas-controls';
+                }
 
-            Polymer({
-                is: 'sweva-canvas-controls',
-                properties: {
-                    zoomValue: {
-                        type: Number,
-                        value: 1
-                    },
-                    maxZoom: {
-                        type: Number,
-                        value: 1
-                    },
-                    minZoom: {
-                        type: Number,
-                        value: 0.2
+                static get properties() {
+                    return {
+                        /* properties meta data object just like 1.x */
+                        zoomValue: {
+                            type: Number,
+                            value: 1
+                        },
+                        maxZoom: {
+                            type: Number,
+                            value: 1
+                        },
+                        minZoom: {
+                            type: Number,
+                            value: 0.2
+                        }
                     }
-                },
-                ready: function () {
+                }
+                ready() {}
 
-                },
-                handleCenterClick: function (event) {
-                    this.fire('centerclick', {});
-                },
-                handleZoomInClick: function (event) {
-                    this.fire('zoomclick', { delta: 1 });
-                },
-                handleZoomOutClick: function (event) {
-                    this.fire('zoomclick', { delta: -1 });
-                },
-                handleZoomSlider: function (event) {
+                handleCenterClick(event) {
+                    this.dispatchEvent(new CustomEvent('centerclick', { bubbles: true, composed: true }));
+                }
+
+                handleZoomInClick(event) {
+                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, delta: 1 }));
+                }
+                handleZoomOutClick(event) {
+                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, delta: -1 }));
+                }
+                handleZoomSlider(event) {
                     var value = this.$$('#zoom-slider').value;
-                    this.fire('zoomslide', { value: value });
-                },
-                adjustZoomSlider: function (zoom) {
+                    this.dispatchEvent(new CustomEvent('zoomslide', { bubbles: true, composed: true, value: value }));
+                }
+                adjustZoomSlider(zoom) {
                     if (this.zoomValue != zoom) {
                         this.zoomValue = zoom;
                     }
                 }
-            });
-        })();
+
+            }
+
+            // Register custom element definition using standard platform API
+            customElements.define(SwevaCanvasControls.is, SwevaCanvasControls);
+        } else {
+            (function () {
+                'use strict';
+
+                Polymer({
+                    is: 'sweva-canvas-controls',
+                    properties: {
+                        zoomValue: {
+                            type: Number,
+                            value: 1
+                        },
+                        maxZoom: {
+                            type: Number,
+                            value: 1
+                        },
+                        minZoom: {
+                            type: Number,
+                            value: 0.2
+                        }
+                    },
+                    ready: function () {
+
+                    },
+                    handleCenterClick: function (event) {
+                        this.fire('centerclick', {});
+                    },
+                    handleZoomInClick: function (event) {
+                        this.fire('zoomclick', { delta: 1 });
+                    },
+                    handleZoomOutClick: function (event) {
+                        this.fire('zoomclick', { delta: -1 });
+                    },
+                    handleZoomSlider: function (event) {
+                        var value = this.$$('#zoom-slider').value;
+                        this.fire('zoomslide', { value: value });
+                    },
+                    adjustZoomSlider: function (zoom) {
+                        if (this.zoomValue != zoom) {
+                            this.zoomValue = zoom;
+                        }
+                    }
+                });
+            })();
+        }
     </script>
 </dom-module>
