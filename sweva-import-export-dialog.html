@@ -58,62 +58,132 @@
         </paper-dialog>
     </template>
     <script>
-        (function () {
-            'use strict';
+        if(Polymer.Element) {
+            //version 2 code
+            class SwevaImportExportDialog extends Polymer.Element {
+                static get is() {
+                    return 'sweva-import-export-dialog';
+                }
 
-            Polymer({
-                is: 'sweva-import-export-dialog',
-                properties: {
-                    mode: {
-                        type: String,
-                        value: 'export'
-                    },
-                    title: {
-                        type: String,
-                        value: ''
-                    },
-                    content: {
-                        type: String,
-                        value: ''
-                    },
-                    isExport: {
-                        type: Boolean,
-                        value: false
+                static get properties() {
+                    return {
+                        mode: {
+                            type: String,
+                            value: 'export'
+                        },
+                        title: {
+                            type: String,
+                            value: ''
+                        },
+                        content: {
+                            type: String,
+                            value: ''
+                        },
+                        isExport: {
+                            type: Boolean,
+                            value: false
+                        }
                     }
-                },
-                ready: function () {
+                }
 
-                },
-                open: function(){
-                    var dialog = this.$$('paper-dialog');
+                ready() {
+                    super.ready();
+                }
+
+                open(){
+                    var dialog = this.shadowRoot.querySelector('paper-dialog');
                     if (dialog) {
                         dialog.open();
                         setTimeout(function () {
                             dialog.querySelector('textarea').focus();
                         }, 0);
-                       
                     }
-                },
-                openImport: function (mode, title) {
+                }
+
+                openImport(mode, title) {
                     this.mode = mode;
                     this.title = title;
                     this.content = '';
                     this.isExport = false;
                     this.open();
-                },
-                openExport: function (title, content) {
+                }
+
+                openExport(title, content) {
                     this.title = title;
                     this.content = content;
                     this.mode = 'export';
                     this.isExport = true;
                     this.open();
-                },
-                handleAccept: function () {
+                }
+
+                handleAccept() {
                     if (this.mode != 'export') {
                         this.fire('accepted', { mode: this.mode, content: this.content });
                     }
                 }
-            });
-        })();
+            }
+
+            // Register custom element definition using standard platform API
+            customElements.define(SwevaImportExportDialog.is, SwevaImportExportDialog);
+        } else {
+            //version 1 code
+            (function () {
+                'use strict';
+
+                Polymer({
+                    is: 'sweva-import-export-dialog',
+                    properties: {
+                        mode: {
+                            type: String,
+                            value: 'export'
+                        },
+                        title: {
+                            type: String,
+                            value: ''
+                        },
+                        content: {
+                            type: String,
+                            value: ''
+                        },
+                        isExport: {
+                            type: Boolean,
+                            value: false
+                        }
+                    },
+                    ready: function () {
+
+                    },
+                    open: function(){
+                        var dialog = this.$$('paper-dialog');
+                        if (dialog) {
+                            dialog.open();
+                            setTimeout(function () {
+                                dialog.querySelector('textarea').focus();
+                            }, 0);
+
+                        }
+                    },
+                    openImport: function (mode, title) {
+                        this.mode = mode;
+                        this.title = title;
+                        this.content = '';
+                        this.isExport = false;
+                        this.open();
+                    },
+                    openExport: function (title, content) {
+                        this.title = title;
+                        this.content = content;
+                        this.mode = 'export';
+                        this.isExport = true;
+                        this.open();
+                    },
+                    handleAccept: function () {
+                        if (this.mode != 'export') {
+                            this.fire('accepted', { mode: this.mode, content: this.content });
+                        }
+                    }
+                });
+            })();
+        }
     </script>
 </dom-module>
