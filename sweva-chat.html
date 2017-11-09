@@ -105,66 +105,76 @@
         </div>
     </template>
     <script>
-        (function () {
-            'use strict';
 
-            Polymer({
-                is: 'sweva-chat',
-                properties: {
-                    messages: {
-                        type: Array,
-                        value: []
+        if (Polymer.Element) {
+            //version 2 code
+            class SwevaChat extends Polymer.Element {
+                static get is() {
+                    return 'sweva-chat';
+                }
 
-                    },
-                    currentMessage: {
-                        type: String,
-                        value: ''
-                    },
-                    scrollHeight: {
-                        type: Number,
-                        value: 0
-                    },
-                    maxMessages: {
-                        type: Number,
-                        value: 5
-                    },
-                    collapsed: {
-                        type: Boolean,
-                        value: false,
-                        observer: '_collapsedChanged'
-                    },
-                    user: {
-                        type: Object,
-                        value: {
-                            name: 'Anonymous',
-                            color: '#000'
+                static get properties() {
+                    return {
+                        messages: {
+                            type: Array,
+                            value: []
+
+                        },
+                        currentMessage: {
+                            type: String,
+                            value: ''
+                        },
+                        scrollHeight: {
+                            type: Number,
+                            value: 0
+                        },
+                        maxMessages: {
+                            type: Number,
+                            value: 5
+                        },
+                        collapsed: {
+                            type: Boolean,
+                            value: false,
+                            observer: '_collapsedChanged'
+                        },
+                        user: {
+                            type: Object,
+                            value: {
+                                name: 'Anonymous',
+                                color: '#000'
+                            }
+                        },
+                        yjs: {
+                            type: Object,
+                            value: null
                         }
-                    },
-                    yjs: {
-                        type: Object,
-                        value: null
                     }
-                },
-                observers: [
-                    '_messagesChanged(messages.splices)'
-                ],
-                ready: function () {
+                }
 
-                },
-                attached: function () {
-                    this._messagesChanged();
+                static get observers() {
+                    return [
+                        '_messagesChanged(messages.splices)'
+                    ]
+                }
+
+                ready() {
+                    super.ready();
+                    Polymer.RenderStatus.beforeNextRender(this, function() {
+                        this._messagesChanged();
+                    });
+                }
 
 
-                },
-                _collapsedChanged: function (collapsed) {
+                _collapsedChanged(collapsed) {
                     if (this.collapsed) {
                         this.style.right = 40 + 'px';
                     }
                     else {
                         this.style.right = 230 + 'px';
                     }
-                },
-                init: function (yjs) {
+                }
+
+                init(yjs) {
                     var self = this;
                     this.yjs = yjs;
                     yjs.share.chat.observe(function (event) {
@@ -178,106 +188,279 @@
                         // concurrent insertions may result in a history > 7, so cleanup here
                         self.cleanupChat()
                     });
-                },
-                appendMessage: function (message, position) {
-                    var messages = this.messages.slice(0);
+                }
 
+                appendMessage(message, position) {
+                    var messages = this.messages.slice(0);
                     messages.splice(position, 0, message);
                     this.messages = messages;
+                }
 
-                },
-                removeMessage: function (position) {
+                removeMessage(position) {
                     var messages = this.messages.slice(0);
                     messages.splice(position, 1);
                     this.messages = messages;
-                },
-                cleanupChat: function () {
+                }
+
+                cleanupChat() {
                     var len;
                     while ((len = this.yjs.share.chat.length) > 50) {
                         this.yjs.share.chat.delete(0)
                     }
-                },
-                _heightToStyle: function (height) {
-                    return 'height: ' + height + 'px';
-                },
-                _colorToStyle: function (color) {
+                }
 
+                _heightToStyle(height) {
+                    return 'height: ' + height + 'px';
+                }
+
+                _colorToStyle(color) {
                     return 'color:' + color + ';';
-                },
-                _timestampToTime: function (timestamp) {
+                }
+
+                _timestampToTime(timestamp) {
                     var d = new Date(+timestamp);
                     return d.toLocaleTimeString();
-                },
-                _messagesChanged: function () {
+                }
 
-                    Polymer.dom.flush()
-                    this.scrollHeight = this.$$('.container').scrollHeight;
-
-                    var container = this.$$('.container');
-                    var scroll = this.$$('.scroll');
-                    container.scrollTop = this.scrollHeight
+                _messagesChanged() {
+                    Polymer.dom.flush();
+                    this.scrollHeight = this.shadowRoot.querySelector('.container').scrollHeight;
+                    var container = this.shadowRoot.querySelector('.container');
+                    var scroll = this.shadowRoot.querySelector('.scroll');
+                    container.scrollTop = this.scrollHeight;
                     scroll.scrollTop = container.scrollTop;
-                },
-                handleEnter: function (e) {
-                    // check if 'enter' was pressed
+                }
 
+                handleEnter(e) {
+                    // check if 'enter' was pressed
                     if (e.keyCode === 13 && !e.ctrlKey && !e.shiftKey) {
                         e.preventDefault();
                         this.handleSendMessage();
                     }
-                },
-                handleScroll: function (event) {
-                    var scroll = this.$$('.scroll');
-                    var container = this.$$('.container');
+                }
+
+                handleScroll(event) {
+                    var scroll = this.shadowRoot.querySelector('.scroll');
+                    var container = this.shadowRoot.querySelector('.container');
                     container.scrollTop = scroll.scrollTop;
+                }
 
-                },
-                addMessage: function (data) {
-
-
+                addMessage(data) {
                     var message = {};
-
                     message.name = data.name || this.user.name || 'Anonymous';
                     message.color = data.color || this.user.color || '#000';
                     message.timestamp = data.timestamp || Date.now();
                     message.message = data.message || 'no message';
-
-
-
                     if (this.yjs.share.chat.length >= 50) {
-                        // If we are goint to insert the 8th element, make sure to delete first.
-                        this.yjs.share.chat.delete(0);
+                    // If we are goint to insert the 8th element, make sure to delete first.
+                    this.yjs.share.chat.delete(0);
                     }
-
                     this.yjs.share.chat.insert(this.yjs.share.chat.length, [message]);
+                }
 
-
-
-
-
-                },
-                handleSendMessage: function () {
-
+                handleSendMessage() {
                     var message = this.currentMessage;
                     if (message.trim().length > 0) {
                         this.currentMessage = "";
                         this.addMessage({ message: message });
                     }
-                },
-                updateUser: function (user) {
+                }
+
+                updateUser(user) {
                     if (user.name) {
                         this.user.name = user.name;
                     }
                     if (user.color) {
                         this.user.color = user.color;
                     }
-                },
-                cleanUp: function () {
+                }
+
+                cleanUp() {
                     this.messages = [];
                     this.yjs = null;
                     this.users = [];
                 }
-            });
-        })();
+            }
+
+            // Register custom element definition using standard platform API
+            customElements.define(SwevaChat.is, SwevaChat);
+        } else {
+            //version 1 code
+            (function () {
+                'use strict';
+
+                Polymer({
+                    is: 'sweva-chat',
+                    properties: {
+                        messages: {
+                            type: Array,
+                            value: []
+
+                        },
+                        currentMessage: {
+                            type: String,
+                            value: ''
+                        },
+                        scrollHeight: {
+                            type: Number,
+                            value: 0
+                        },
+                        maxMessages: {
+                            type: Number,
+                            value: 5
+                        },
+                        collapsed: {
+                            type: Boolean,
+                            value: false,
+                            observer: '_collapsedChanged'
+                        },
+                        user: {
+                            type: Object,
+                            value: {
+                                name: 'Anonymous',
+                                color: '#000'
+                            }
+                        },
+                        yjs: {
+                            type: Object,
+                            value: null
+                        }
+                    },
+                    observers: [
+                        '_messagesChanged(messages.splices)'
+                    ],
+                    ready: function () {
+
+                    },
+                    attached: function () {
+                        this._messagesChanged();
+
+
+                    },
+                    _collapsedChanged: function (collapsed) {
+                        if (this.collapsed) {
+                            this.style.right = 40 + 'px';
+                        }
+                        else {
+                            this.style.right = 230 + 'px';
+                        }
+                    },
+                    init: function (yjs) {
+                        var self = this;
+                        this.yjs = yjs;
+                        yjs.share.chat.observe(function (event) {
+                            if (event.type === 'insert') {
+
+                                self.appendMessage(event.object._content[event.index].val, event.index);
+                            } else if (event.type === 'delete') {
+                                self.removeMessage(event.index);
+
+                            }
+                            // concurrent insertions may result in a history > 7, so cleanup here
+                            self.cleanupChat()
+                        });
+                    },
+                    appendMessage: function (message, position) {
+                        var messages = this.messages.slice(0);
+
+                        messages.splice(position, 0, message);
+                        this.messages = messages;
+
+                    },
+                    removeMessage: function (position) {
+                        var messages = this.messages.slice(0);
+                        messages.splice(position, 1);
+                        this.messages = messages;
+                    },
+                    cleanupChat: function () {
+                        var len;
+                        while ((len = this.yjs.share.chat.length) > 50) {
+                            this.yjs.share.chat.delete(0)
+                        }
+                    },
+                    _heightToStyle: function (height) {
+                        return 'height: ' + height + 'px';
+                    },
+                    _colorToStyle: function (color) {
+
+                        return 'color:' + color + ';';
+                    },
+                    _timestampToTime: function (timestamp) {
+                        var d = new Date(+timestamp);
+                        return d.toLocaleTimeString();
+                    },
+                    _messagesChanged: function () {
+
+                        Polymer.dom.flush()
+                        this.scrollHeight = this.$$('.container').scrollHeight;
+
+                        var container = this.$$('.container');
+                        var scroll = this.$$('.scroll');
+                        container.scrollTop = this.scrollHeight
+                        scroll.scrollTop = container.scrollTop;
+                    },
+                    handleEnter: function (e) {
+                        // check if 'enter' was pressed
+
+                        if (e.keyCode === 13 && !e.ctrlKey && !e.shiftKey) {
+                            e.preventDefault();
+                            this.handleSendMessage();
+                        }
+                    },
+                    handleScroll: function (event) {
+                        var scroll = this.$$('.scroll');
+                        var container = this.$$('.container');
+                        container.scrollTop = scroll.scrollTop;
+
+                    },
+                    addMessage: function (data) {
+
+
+                        var message = {};
+
+                        message.name = data.name || this.user.name || 'Anonymous';
+                        message.color = data.color || this.user.color || '#000';
+                        message.timestamp = data.timestamp || Date.now();
+                        message.message = data.message || 'no message';
+
+
+
+                        if (this.yjs.share.chat.length >= 50) {
+                            // If we are goint to insert the 8th element, make sure to delete first.
+                            this.yjs.share.chat.delete(0);
+                        }
+
+                        this.yjs.share.chat.insert(this.yjs.share.chat.length, [message]);
+
+
+
+
+
+                    },
+                    handleSendMessage: function () {
+
+                        var message = this.currentMessage;
+                        if (message.trim().length > 0) {
+                            this.currentMessage = "";
+                            this.addMessage({ message: message });
+                        }
+                    },
+                    updateUser: function (user) {
+                        if (user.name) {
+                            this.user.name = user.name;
+                        }
+                        if (user.color) {
+                            this.user.color = user.color;
+                        }
+                    },
+                    cleanUp: function () {
+                        this.messages = [];
+                        this.yjs = null;
+                        this.users = [];
+                    }
+                });
+            })();
+        }
+
     </script>
 </dom-module>
