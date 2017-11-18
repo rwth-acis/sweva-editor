@@ -161,10 +161,12 @@
                     var container = this.shadowRoot.querySelector('#cursor-container');
                     if (outside) {
                         this.moveTo(posX, posY);
+                        container.classList.toggle('ouside', true);
                         //this.toggleClass('outside', true, container);
 
                     } else {
                         this.moveTo(this.posX, this.posY);
+                        container.classList.toggle('ouside', false);
                         //this.toggleClass('outside', false, container);
                     }
 

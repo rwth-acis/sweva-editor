@@ -118,7 +118,7 @@
 
                 handleAccept() {
                     if (this.mode != 'export') {
-                        this.fire('accepted', { mode: this.mode, content: this.content });
+                      this.dispatchEvent(new CustomEvent('accepted', { bubbles: true, composed: true , detail: { mode: this.mode, content: this.content } }));
                     }
                 }
             }
