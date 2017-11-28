@@ -124,666 +124,1276 @@
 
     </template>
     <script>
-        (function () {
+        if(Polymer.Element){
+          //version 2 code
+          class SwevaInputContainer extends Polymer.Element {
+            static get is() {
+              return 'sweva-input-container';
+            }
+
+            static get properties() {
+              return {
+                  /* properties meta data object just like 1.x */
+                posX: {
+                  type: Number,
+                  value: 50
+                },
+                posY: {
+                  type: Number,
+                  value: 50
+                },
+                indexPos: {
+                  type: Number,
+                  value: 0
+                },
+                yjs: {
+                  type: Object,
+                  value: null
+                },
+                jsPlumbInstance: {
+                  type: Object,
+                  value: null
+                },
+                width: {
+                  type: Number,
+                  value: 200
+                },
+
+                jsPlumbStyles: {
+                  type: Object,
+                  value: {
+                  }
+                },
+                type: {
+                  type: Object,
+                  value: ''
+                },
+                toggleButtonValue: {
+                  type: Boolean,
+                  value: false
+
+                },
+                edges: {
+                  type: Object,
+                  value: null
+                },
+                selectedBy: {
+                  type: String,
+                  value: ''
+                },
+                id: {
+                  type: String
+                }
+              }
+            }
+
+            ready() {
+              super.ready();
+              this.prepareStyles();
+
+              // RenderStatus replaces the attached function in Polymer 2.0
+              Polymer.RenderStatus.beforeNextRender(this, function () {
+                this.$.content.addEventListener('mousewheel', function (event) { event.stopPropagation(); }, false);
+                this.shadowRoot.querySelector('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
+                this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
+              });
+            }
+
+            init(jsPlumbInstance, yjs, edges, id, fromYjs) {
+              this.edges = edges;
+              this.yjs = yjs;
+              this.jsPlumbInstance = jsPlumbInstance;
+              this.style.width = this.width + 'px';
+              this.id = id || this._generateGUID();
+              Polymer.dom.flush();
+              var self = this;
+              if (typeof fromYjs === 'undefined' || fromYjs == false) {
+
+                var map = self.yjs.share.mapperContainers.set(self.id, Y.Map);
+
+                map.set('index', self.indexPos);
+                map.set('type', self.shadowRoot.querySelector('#type').value || '');
+                map.set('label', self.shadowRoot.querySelector('#label').value || '');
+                map.set('stringvalue', self.shadowRoot.querySelector('#stringvalue').value || '');
+                map.set('multilinevalue', self.shadowRoot.querySelector('#multilinevalue').value || '');
+                map.set('numbervalue', self.shadowRoot.querySelector('#numbervalue').value || '');
+                map.set('booleanvalue', self.shadowRoot.querySelector('#booleanvalue').checked || '');
+                map.set('min', self.shadowRoot.querySelector('#min').value || '');
+                map.set('max', self.shadowRoot.querySelector('#max').value || '');
+                map.set('items', self.shadowRoot.querySelector('#items').value || '');
+                map.set('description', self.shadowRoot.querySelector('#description').value || '');
+                map.set('position', { x: self.posX, y: self.posY });
+              }
+
+              this.jsPlumbInstance.draggable(this, {
+                stop: function (event) {
+                  self.updatePos(event.el.offsetLeft, event.el.offsetTop);
+                }
+              });
+
+              this.updatePos();
+              this.endpoint = this.jsPlumbInstance.addEndpoint(this.id, this.jsPlumbStyles.inputEndpoint, {
+                anchor: [1, 0, 1, -1],
+                uuid: this.id + 'endpoint'
+              });
+            }
+
+            contextMenu(action) {
+              if (action == 'delete') {
+                this.remove();
+              }
+            }
+
+            handleContextmenu() {
+              var current = event.target;
+              //get correct position if over children
+              while (current.parentNode && current.tagName != 'SWEVA-INPUT-CONTAINER') {
+                current = current.parentNode;
+              }
+              var items = [
+                { title: 'Delete', fn: current.contextMenu.bind(current, 'delete') }
+              ];
+              basicContext.show(items, event);
+              event.preventDefault();
+            }
+
+            remove(fromYjs) {
+              this.clearConnections();
+              this.jsPlumbInstance.remove(this.id);
+              if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                this.yjs.share.mapperContainers.delete(this.id);
+              }
+            }
+
+            clear() {
+              this.clearConnections();
+              this.jsPlumbInstance.deleteEndpoint(this.endpoint);
+            }
+
+            addConnection(sourceEndpointId, targetId, targetEndpointId, fromYjs) {
+              var connectionExists = false;
+              var possibleSourceEndpoint = '';
+              var possibleTargetEndpoint = '';
+              this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
+                var targetEndpoint = null;
+                var sourceEndpoint = null;
+                for (var i = 0; i < connection.endpoints.length; i++) {
+                  var endpoint = connection.endpoints[i];
+                  if (endpoint.isSource) {
+                    sourceEndpoint = endpoint.getUuid();
+                  }
+                  else if (endpoint.isTarget) {
+                    targetEndpoint = endpoint.getUuid();
+                  }
+                }
+                if (sourceEndpoint == sourceEndpointId && targetEndpoint == targetEndpointId) {
+                  connectionExists = true;
+                }
+              });
+              this.jsPlumbInstance.selectEndpoints({ source: this.id }).each(function (endpoint) {
+                if (endpoint.isSource) {
+                  possibleSourceEndpoint = endpoint.getUuid();
+                }
+              });
+              if (!connectionExists) {
+                try {
+                  if (!sourceEndpointId) {
+                    this.jsPlumbInstance.selectEndpoints({ source: this.id }).each(function (endpoint) {
+                      if (endpoint.isSource) {
+                        sourceEndpointId = endpoint.getUuid();
+                      }
+                    });
+                  }
+                  if (!targetEndpointId) {
+                    this.jsPlumbInstance.selectEndpoints({ target: targetId }).each(function (endpoint) {
+                      if (endpoint.isTarget) {
+                        targetEndpointId = endpoint.getUuid();
+                      }
+                    });
+                  }
+                  if (sourceEndpointId && targetEndpointId) {
+                    this.jsPlumbInstance.connect({ uuids: [sourceEndpointId, targetEndpointId], editable: true, deleteEndpointsOnDetach: false });
+                  }
+                } catch (e) {}
+              }
+              if (sourceEndpointId && targetEndpointId) {
+                var self = this;
+                if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                  var map = this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map);
+                  map.set('source', self.id);
+                  map.set('target', targetId);
+                  map.set('sourceEndpoint', sourceEndpointId);
+                  map.set('targetEndpoint', targetEndpointId);
+                }
+              }
+            }
+
+            removeConnection(sourceEndpointId, targetEndpointId, fromYjs) {
+              var self = this;
+              this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
+                var targetEndpoint = null;
+                var sourceEndpoint = null;
+                for (var i = 0; i < connection.endpoints.length; i++) {
+                  var endpoint = connection.endpoints[i];
+                  if (endpoint.isSource) {
+                    sourceEndpoint = endpoint.getUuid();
+                  }
+                  else if (endpoint.isTarget) {
+                    targetEndpoint = endpoint.getUuid();
+                  }
+                }
+                //console.log('weg')
+                if (sourceEndpoint == sourceEndpointId && targetEndpoint == targetEndpointId) {
+                  self.jsPlumbInstance.detach(connection);
+                }
+              });
+              if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                this.yjs.share.edges.delete(sourceEndpointId + targetEndpointId);
+              }
+            }
+
+            clearConnections() {
+              var self = this;
+              this.jsPlumbInstance.select().each(function (connection) {
+                if (connection.sourceId == self.id || connection.targetId == self.id) {
+                  var targetEndpoint = null;
+                  var sourceEndpoint = null;
+                  for (var i = 0; i < connection.endpoints.length; i++) {
+                    var endpoint = connection.endpoints[i];
+                    if (endpoint.isSource) {
+                      sourceEndpoint = endpoint.getUuid();
+                    }
+                    else if (endpoint.isTarget) {
+                      targetEndpoint = endpoint.getUuid();
+                    }
+                  }
+                  if (targetEndpoint && sourceEndpoint) {
+                    self.removeConnection(sourceEndpoint, targetEndpoint);
+                  }
+                }
+              });
+            }
+
+            updateConnections() {
+              var edges = this.edges;
+              if (edges) {
+                for (var key in edges) {
+                  if (edges.hasOwnProperty(key)) {
+                    var edge = edges[key];
+                    if (this.id == edge.source) {
+                      //console.log('target', edge.target);
+                      this.addConnection(edge.sourceEndpoint, edge.target, edge.targetEndpoint);
+                    }
+                  }
+                }
+              }
+            }
+
+            getInformation() {
+              var result = {};
+              result.type = this.type;
+              switch (this.type) {
+                case 'header':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  break;
+                case 'text':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  result.value = this.shadowRoot.querySelector('#stringvalue').value;
+                  break;
+                case 'multiline':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  result.value = this.shadowRoot.querySelector('#multilinevalue').value;
+                  break;
+                case 'number':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  result.value = this.shadowRoot.querySelector('#numbervalue').value || 0;
+                  if (this.shadowRoot.querySelector('#min').value) {
+                    result.min = this.shadowRoot.querySelector('#min').value;
+                  }
+                  if (this.shadowRoot.querySelector('#max').value) {
+                    result.max = this.shadowRoot.querySelector('#max').value;
+                  }
+                  break;
+                case 'slider':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  result.value = this.shadowRoot.querySelector('#numbervalue').value || 0;
+                  if (this.shadowRoot.querySelector('#min').value) {
+                    result.min = this.shadowRoot.querySelector('#min').value;
+                  }
+                  if (this.shadowRoot.querySelector('#max').value) {
+                    result.max = this.shadowRoot.querySelector('#max').value;
+                  }
+                  break;
+                case 'toggle':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  result.value = this.shadowRoot.querySelector('#booleanvalue').checked;
+                  break;
+                case 'dropdown':
+                  result.label = this.shadowRoot.querySelector('#label').value;
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  var items = this.shadowRoot.querySelector('#items');
+                  result.items = (typeof items.value === 'string') ? items.value.split(',') : items.value;
+                  break;
+                case 'fixed':
+                  result.description = this.shadowRoot.querySelector('#description').value;
+                  result.value = this.shadowRoot.querySelector('#multilinevalue').value;
+                  break;
+                default:
+              }
+              //mapping
+              result.map = [];
+              if (this.type !== 'header') {
+                this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
+                  var inputLabel = '';
+                  var nodeAlias = connection.target.alias;
+                  for (var i = 0; i < connection.endpoints.length; i++) {
+                    var endpoint = connection.endpoints[i];
+                    if (endpoint.isTarget) {
+                      var labels = endpoint.getOverlays();
+                      for (var key in labels) {
+                        if (labels.hasOwnProperty(key)) {
+                          inputLabel = labels[key].label;
+                        }
+                      }
+                    }
+                  }
+                  result.map.push('input.' + nodeAlias + '.' + inputLabel);
+                });
+              }
+              return result;
+            }
+
+            toggleButtonValueChanged(event) {
+              if (event.target) {
+                this.toggleButtonValue = event.target.checked;
+                this.handleInputChanged(event);
+              }
+            }
+
+            handleTypeChanged(event) {
+              this.updateType(event.target);
+            }
+
+            updateType(element, fromYjs) {
+              this.type = element.value;
+              this.style.backgroundColor = '';
+              switch (this.type) {
+                case 'header':
+                  this.style.backgroundColor = '#f00';
+                  break;
+                case 'text':
+                  this.style.backgroundColor = '#00802b';
+                  break;
+                case 'multiline':
+                  this.style.backgroundColor = '#00802b';
+                  break;
+                case 'number':
+                  this.style.backgroundColor = '#007fff';
+                  break;
+                case 'slider':
+                  this.style.backgroundColor = '#000596';
+                  break;
+                case 'toggle':
+                  this.style.backgroundColor = '#666';
+                  break;
+                case 'dropdown':
+                  this.style.backgroundColor = '#ff00bf';
+                  break;
+                case 'fixed':
+                  this.style.backgroundColor = '#111';
+                  break;
+                default:
+              }
+              if (typeof fromYjs === 'undefined' || !fromYjs) {
+                this.updateYjs(element);
+              }
+            }
+
+            showElement(element, type) {
+              switch (type) {
+                case 'header':
+                  return (['label'].indexOf(element) >= 0);
+                case 'text':
+                  return (['label', 'description', 'stringvalue'].indexOf(element) >= 0);
+                case 'multiline':
+                  return (['label', 'description', 'multilinevalue'].indexOf(element) >= 0);
+                case 'number':
+                  return (['label', 'description', 'min', 'max', 'numbervalue'].indexOf(element) >= 0);
+                case 'slider':
+                  return (['label', 'description', 'min', 'max', 'numbervalue'].indexOf(element) >= 0);
+                case 'toggle':
+                  return (['label', 'description', 'booleanvalue'].indexOf(element) >= 0);
+                case 'dropdown':
+                  return (['label', 'description', 'items'].indexOf(element) >= 0);
+                case 'fixed':
+                  return (['description', 'multilinevalue'].indexOf(element) >= 0);
+                default:
+                  return false;
+              }
+            }
+
+            handleIndexChanged(event) {
+              this.indexPos = event.target.value;
+              var map = this.yjs.share.mapperContainers.get(this.id);
+              map.set('index', this.indexPos);
+            }
+
+            handleInputChanged(event) {
+              if (event.target == null) {
+                return;
+              }
+              var self = this;
+              var currentElement = event.target;
+              this.debounce('inputupdate', function () {
+                if (currentElement) {
+                  while (!currentElement.dataset.parent && currentElement.parentNode) {
+                    currentElement = currentElement.parentNode;
+                  }
+                  self.updateYjs(currentElement);
+                }
+              }, 600);
+            }
+
+            _generateGUID() {
+              function s4() {
+                return Math.floor((1 + Math.random()) * 0x10000)
+                  .toString(16)
+                  .substring(1);
+              }
+              return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                s4() + '-' + s4() + s4() + s4();
+            }
+
+            prepareStyles() {
+              var inputEndpointHoverStyle = {
+                fillStyle: "#00cc00",
+                strokeStyle: "#00cc00"
+              };
+              var connectorPaintStyle = {
+                lineWidth: 4,
+                strokeStyle: "#333",
+                joinstyle: "round",
+                outlineColor: "white",
+                outlineWidth: 2,
+                dashstyle: '1'
+              }
+              var connectorHoverStyle = {
+                lineWidth: 4,
+                strokeStyle: "#00cc00",
+                outlineWidth: 2,
+                outlineColor: "#00cc00",
+                dashstyle: '0'
+              }
+              var inputEndpoint = {
+                endpoint: "Rectangle",
+                paintStyle: {
+                  strokeStyle: "none",
+                  fillStyle: "#333",
+                  radius: 14
+                },
+                hoverPaintStyle: inputEndpointHoverStyle,
+                maxConnections: -1,
+                dropOptions: { hoverClass: "hover", activeClass: "active" },
+                isSource: true,
+                connector: ["Bezier"],
+                connectorStyle: connectorPaintStyle,
+                connectorHoverStyle: connectorHoverStyle,
+                dragOptions: {},
+              }
+              this.jsPlumbStyles.inputEndpoint = inputEndpoint;
+            }
+
+            repaint() {
+              try {
+                this.jsPlumbInstance.repaint(this, { left: this.posX, top: this.posY });
+              }
+              catch (e) {}
+            }
+
+            updateYjs(element) {
+              if (element == null) {
+                return;
+              }
+              try {
+                var map = this.yjs.share.mapperContainers.get(this.id);
+                var value;
+                if (element.id == 'booleanvalue') {
+                  value = element.checked;
+                } else {
+                  value = element.value;
+                }
+                map.set(element.id + '', value);
+              }
+              catch (e) {}
+            }
+
+            updateIndex(index) {
+              if (this.index != index) {
+                this.index = index;
+                var map = this.yjs.share.mapperContainers.get(this.id);
+                map.set('index', index);
+              }
+            }
+
+            update(options, fromYjs) {
+              if (typeof options === 'object') {
+                for (var key in options) {
+                  if (options.hasOwnProperty(key)) {
+                    if (key == 'index') {
+                      if (this.indexPos != options.index) {
+                        this.indexPos = options.index;
+                      }
+                    }
+                    else if (key == 'booleanvalue') {
+                      var element = this.shadowRoot.querySelector('#booleanvalue');
+                      if (element.checked != options.booleanvalue) {
+                        element.checked = options.booleanvalue;
+                      }
+                    }
+                    else if (key == 'value') {
+                      if (typeof options.type === 'string') {
+
+                        switch (this.type) {
+                          case 'header':
+                            break;
+                          case 'text':
+                            var element = this.shadowRoot.querySelector('#stringvalue');
+                            element.value = options[key];
+                            break;
+                          case 'multiline':
+                            var element = this.shadowRoot.querySelector('#multilinevalue');
+                            element.value = options[key];
+                            break;
+                          case 'number':
+                          case 'slider':
+                            var element = this.shadowRoot.querySelector('#numbervalue');
+                            element.value = options[key];
+                            break;
+                          case 'toggle':
+                            var element = this.shadowRoot.querySelector('#booleanvalue');
+                            element.checked = options[key];
+                            break;
+                          case 'dropdown':
+                            var element = this.shadowRoot.querySelector('#items');
+                            element.value = options[key].join(',') || options[key];//(Array.isArray(options[key])) ? options[key].join(';') : options[key];
+                            break;
+                          case 'fixed':
+                            var element = this.shadowRoot.querySelector('#multilinevalue');
+                            element.value = options[key];
+                          default:
+                        }
+                      }
+                    }
+                    else if (key == 'map') {
+                    }
+                    else if (key == 'position') {
+                      this.updatePos( options[key].x , options[key].y, fromYjs);
+                    } else {
+                      var element = this.shadowRoot.querySelector('#' + key);
+                      if (element && element.value != options[key]) {
+                        element.value = options[key];
+                        if (element.id == 'type') {
+                          this.updateType(element, true);
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            updatePos(x, y, fromYjs) {
+              if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+                if (this.posX == x && this.posY == y) {
+                  return;
+                }
+                this.posX = x;
+                this.posY = y;
+              }
+              this.style.left = this.posX + 'px';
+              this.style.top = this.posY + 'px';
+              this.repaint();
+              if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                if (this.yjs) {
+                  var map = this.yjs.share.mapperContainers.get(this.id);
+                  if (map) {
+                    map.set('position', { x: this.posX, y: this.posY });
+                  }
+                }
+              }
+            }
+          }
+
+          // Register custom element definition using standard platform API
+          customElements.define(SwevaInputContainer.is, SwevaInputContainer);
+        } else {
+          //version 1 code
+          (function () {
             'use strict';
 
             Polymer({
-                is: 'sweva-input-container',
-                properties: {
-                    posX: {
-                        type: Number,
-                        value: 50
-                    },
-                    posY: {
-                        type: Number,
-                        value: 50
-                    },
-                    indexPos: {
-                        type: Number,
-                        value: 0
-                    },
-                    yjs: {
-                        type: Object,
-                        value: null
-                    },
-                    jsPlumbInstance: {
-                        type: Object,
-                        value: null
-                    },
-                    width: {
-                        type: Number,
-                        value: 200
-                    },
+              is: 'sweva-input-container',
+              properties: {
+                posX: {
+                  type: Number,
+                  value: 50
+                },
+                posY: {
+                  type: Number,
+                  value: 50
+                },
+                indexPos: {
+                  type: Number,
+                  value: 0
+                },
+                yjs: {
+                  type: Object,
+                  value: null
+                },
+                jsPlumbInstance: {
+                  type: Object,
+                  value: null
+                },
+                width: {
+                  type: Number,
+                  value: 200
+                },
 
-                    jsPlumbStyles: {
-                        type: Object,
-                        value: {
-                        }
-                    },
-                    type: {
-                        type: Object,
-                        value: ''
-                    },
-                    toggleButtonValue: {
-                        type: Boolean,
-                        value: false
+                jsPlumbStyles: {
+                  type: Object,
+                  value: {
+                  }
+                },
+                type: {
+                  type: Object,
+                  value: ''
+                },
+                toggleButtonValue: {
+                  type: Boolean,
+                  value: false
 
-                    },
-                    edges: {
-                        type: Object,
-                        value: null
-                    },
-                    selectedBy: {
-                        type: String,
-                        value: ''
-                    },
-                    id: {
-                        type: String
+                },
+                edges: {
+                  type: Object,
+                  value: null
+                },
+                selectedBy: {
+                  type: String,
+                  value: ''
+                },
+                id: {
+                  type: String
+                }
+
+              },
+              ready: function () {
+
+
+                this.prepareStyles();
+              },
+              attached: function () {
+                this.$.content.addEventListener('mousewheel', function (event) { event.stopPropagation(); }, false);
+                this.$$('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
+                this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
+              },
+              init: function (jsPlumbInstance, yjs, edges, id, fromYjs) {
+                this.edges = edges;
+                this.yjs = yjs;
+                this.jsPlumbInstance = jsPlumbInstance;
+                this.style.width = this.width + 'px';
+                this.id = id || this._generateGUID();
+                Polymer.dom.flush();
+                var self = this;
+                if (typeof fromYjs === 'undefined' || fromYjs == false) {
+
+                  var map = self.yjs.share.mapperContainers.set(self.id, Y.Map);
+
+                  map.set('index', self.indexPos);
+                  map.set('type', self.$$('#type').value || '');
+                  map.set('label', self.$$('#label').value || '');
+                  map.set('stringvalue', self.$$('#stringvalue').value || '');
+                  map.set('multilinevalue', self.$$('#multilinevalue').value || '');
+                  map.set('numbervalue', self.$$('#numbervalue').value || '');
+                  map.set('booleanvalue', self.$$('#booleanvalue').checked || '');
+                  map.set('min', self.$$('#min').value || '');
+                  map.set('max', self.$$('#max').value || '');
+                  map.set('items', self.$$('#items').value || '');
+                  map.set('description', self.$$('#description').value || '');
+
+                  map.set('position', { x: self.posX, y: self.posY });
+                }
+
+                this.jsPlumbInstance.draggable(this, {
+                  stop: function (event) {
+                    self.updatePos(event.el.offsetLeft, event.el.offsetTop);
+                  }
+                });
+
+                this.updatePos();
+                this.endpoint = this.jsPlumbInstance.addEndpoint(this.id, this.jsPlumbStyles.inputEndpoint, {
+                  anchor: [1, 0, 1, -1],
+                  uuid: this.id + 'endpoint'
+
+                });
+              },
+              contextMenu: function (action) {
+
+
+                if (action == 'delete') {
+                  this.remove();
+                }
+              },
+              handleContextmenu: function() {
+                var current = event.target;
+                //get correct position if over children
+                while (current.parentNode && current.tagName != 'SWEVA-INPUT-CONTAINER') {
+                  current = current.parentNode;
+                }
+
+
+
+                var items = [
+                  { title: 'Delete', fn: current.contextMenu.bind(current, 'delete') }
+                ];
+
+                basicContext.show(items, event);
+                event.preventDefault();
+              },
+
+              remove: function (fromYjs) {
+                this.clearConnections();
+                this.jsPlumbInstance.remove(this.id);
+
+                if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                  this.yjs.share.mapperContainers.delete(this.id);
+                }
+
+              },
+              clear: function () {
+                this.clearConnections();
+                this.jsPlumbInstance.deleteEndpoint(this.endpoint);
+              },
+              addConnection: function (sourceEndpointId, targetId, targetEndpointId, fromYjs) {
+                var connectionExists = false;
+                var possibleSourceEndpoint = '';
+                var possibleTargetEndpoint = '';
+
+                this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
+                  var targetEndpoint = null;
+                  var sourceEndpoint = null;
+                  for (var i = 0; i < connection.endpoints.length; i++) {
+                    var endpoint = connection.endpoints[i];
+                    if (endpoint.isSource) {
+                      sourceEndpoint = endpoint.getUuid();
+                    }
+                    else if (endpoint.isTarget) {
+                      targetEndpoint = endpoint.getUuid();
                     }
 
-                },
-                ready: function () {
+                  }
 
+                  if (sourceEndpoint == sourceEndpointId && targetEndpoint == targetEndpointId) {
+                    connectionExists = true;
+                  }
+                });
 
-                    this.prepareStyles();
-                },
-                attached: function () {
-                    this.$.content.addEventListener('mousewheel', function (event) { event.stopPropagation(); }, false);
-                    this.$$('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
-                    this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
-                },
-                init: function (jsPlumbInstance, yjs, edges, id, fromYjs) {
-                    this.edges = edges;
-                    this.yjs = yjs;
-                    this.jsPlumbInstance = jsPlumbInstance;
-                    this.style.width = this.width + 'px';
-                    this.id = id || this._generateGUID();
-                    Polymer.dom.flush();
-                    var self = this;
-                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                this.jsPlumbInstance.selectEndpoints({ source: this.id }).each(function (endpoint) {
+                  if (endpoint.isSource) {
+                    possibleSourceEndpoint = endpoint.getUuid();
+                  }
+                });
 
-                        var map = self.yjs.share.mapperContainers.set(self.id, Y.Map);
+                if (!connectionExists) {
+                  try {
 
-                        map.set('index', self.indexPos);
-                        map.set('type', self.$$('#type').value || '');
-                        map.set('label', self.$$('#label').value || '');
-                        map.set('stringvalue', self.$$('#stringvalue').value || '');
-                        map.set('multilinevalue', self.$$('#multilinevalue').value || '');
-                        map.set('numbervalue', self.$$('#numbervalue').value || '');
-                        map.set('booleanvalue', self.$$('#booleanvalue').checked || '');
-                        map.set('min', self.$$('#min').value || '');
-                        map.set('max', self.$$('#max').value || '');
-                        map.set('items', self.$$('#items').value || '');
-                        map.set('description', self.$$('#description').value || '');
+                    if (!sourceEndpointId) {
 
-                        map.set('position', { x: self.posX, y: self.posY });
-                    }
-
-                    this.jsPlumbInstance.draggable(this, {
-                        stop: function (event) {
-                            self.updatePos(event.el.offsetLeft, event.el.offsetTop);
-                        }
-                    });
-                   
-                    this.updatePos();
-                    this.endpoint = this.jsPlumbInstance.addEndpoint(this.id, this.jsPlumbStyles.inputEndpoint, {
-                        anchor: [1, 0, 1, -1],
-                        uuid: this.id + 'endpoint'
-
-                    });
-                },
-                contextMenu: function (action) {
-
-                    
-                    if (action == 'delete') {
-                        this.remove();
-                    }
-                },
-                handleContextmenu: function() {
-                    var current = event.target;
-                    //get correct position if over children
-                    while (current.parentNode && current.tagName != 'SWEVA-INPUT-CONTAINER') {
-                        current = current.parentNode;
-                    }
-
-
-
-                    var items = [                       
-                        { title: 'Delete', fn: current.contextMenu.bind(current, 'delete') }
-                    ];
-
-                    basicContext.show(items, event);
-                    event.preventDefault();
-                },
-
-                remove: function (fromYjs) {
-                    this.clearConnections();
-                    this.jsPlumbInstance.remove(this.id);
-
-                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
-                        this.yjs.share.mapperContainers.delete(this.id);
-                    }
-
-                },
-                clear: function () {
-                    this.clearConnections();
-                    this.jsPlumbInstance.deleteEndpoint(this.endpoint);
-                },
-                addConnection: function (sourceEndpointId, targetId, targetEndpointId, fromYjs) {
-                    var connectionExists = false;
-                    var possibleSourceEndpoint = '';
-                    var possibleTargetEndpoint = '';
-
-                    this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
-                        var targetEndpoint = null;
-                        var sourceEndpoint = null;
-                        for (var i = 0; i < connection.endpoints.length; i++) {
-                            var endpoint = connection.endpoints[i];
-                            if (endpoint.isSource) {
-                                sourceEndpoint = endpoint.getUuid();
-                            }
-                            else if (endpoint.isTarget) {
-                                targetEndpoint = endpoint.getUuid();
-                            }
-
-                        }
-
-                        if (sourceEndpoint == sourceEndpointId && targetEndpoint == targetEndpointId) {
-                            connectionExists = true;
-                        }
-                    });
-
-                    this.jsPlumbInstance.selectEndpoints({ source: this.id }).each(function (endpoint) {
+                      this.jsPlumbInstance.selectEndpoints({ source: this.id }).each(function (endpoint) {
                         if (endpoint.isSource) {
-                            possibleSourceEndpoint = endpoint.getUuid();
-                        }
-                    });
-
-                    if (!connectionExists) {
-                        try {
-
-                            if (!sourceEndpointId) {
-
-                                this.jsPlumbInstance.selectEndpoints({ source: this.id }).each(function (endpoint) {
-                                    if (endpoint.isSource) {
-                                        sourceEndpointId = endpoint.getUuid();
-
-                                    }
-                                });
-                            }
-                            if (!targetEndpointId) {
-                                this.jsPlumbInstance.selectEndpoints({ target: targetId }).each(function (endpoint) {
-                                    if (endpoint.isTarget) {
-                                        targetEndpointId = endpoint.getUuid();
-                                    }
-                                });
-                            }
-
-                            if (sourceEndpointId && targetEndpointId) {
-                                this.jsPlumbInstance.connect({ uuids: [sourceEndpointId, targetEndpointId], editable: true, deleteEndpointsOnDetach: false });
-
-                            }
-                        } catch (e) {
+                          sourceEndpointId = endpoint.getUuid();
 
                         }
-
+                      });
                     }
+                    if (!targetEndpointId) {
+                      this.jsPlumbInstance.selectEndpoints({ target: targetId }).each(function (endpoint) {
+                        if (endpoint.isTarget) {
+                          targetEndpointId = endpoint.getUuid();
+                        }
+                      });
+                    }
+
                     if (sourceEndpointId && targetEndpointId) {
-                        var self = this;
-                        if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                      this.jsPlumbInstance.connect({ uuids: [sourceEndpointId, targetEndpointId], editable: true, deleteEndpointsOnDetach: false });
 
-                            var map = this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map);
+                    }
+                  } catch (e) {
 
-                            map.set('source', self.id);
-                            map.set('target', targetId);
-                            map.set('sourceEndpoint', sourceEndpointId);
-                            map.set('targetEndpoint', targetEndpointId);
+                  }
+
+                }
+                if (sourceEndpointId && targetEndpointId) {
+                  var self = this;
+                  if (typeof fromYjs === 'undefined' || fromYjs == false) {
+
+                    var map = this.yjs.share.edges.set(sourceEndpointId + targetEndpointId, Y.Map);
+
+                    map.set('source', self.id);
+                    map.set('target', targetId);
+                    map.set('sourceEndpoint', sourceEndpointId);
+                    map.set('targetEndpoint', targetEndpointId);
+                  }
+                }
+
+              },
+              removeConnection: function (sourceEndpointId, targetEndpointId, fromYjs) {
+                var self = this;
+                this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
+                  var targetEndpoint = null;
+                  var sourceEndpoint = null;
+                  for (var i = 0; i < connection.endpoints.length; i++) {
+                    var endpoint = connection.endpoints[i];
+                    if (endpoint.isSource) {
+                      sourceEndpoint = endpoint.getUuid();
+                    }
+                    else if (endpoint.isTarget) {
+                      targetEndpoint = endpoint.getUuid();
+                    }
+
+                  }
+                  //console.log('weg')
+                  if (sourceEndpoint == sourceEndpointId && targetEndpoint == targetEndpointId) {
+
+                    self.jsPlumbInstance.detach(connection);
+                  }
+                });
+
+                if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                  this.yjs.share.edges.delete(sourceEndpointId + targetEndpointId);
+                }
+
+              },
+              clearConnections: function () {
+                var self = this;
+                this.jsPlumbInstance.select().each(function (connection) {
+                  if (connection.sourceId == self.id || connection.targetId == self.id) {
+                    var targetEndpoint = null;
+                    var sourceEndpoint = null;
+                    for (var i = 0; i < connection.endpoints.length; i++) {
+                      var endpoint = connection.endpoints[i];
+                      if (endpoint.isSource) {
+                        sourceEndpoint = endpoint.getUuid();
+                      }
+                      else if (endpoint.isTarget) {
+                        targetEndpoint = endpoint.getUuid();
+                      }
+
+                    }
+
+                    if (targetEndpoint && sourceEndpoint) {
+                      self.removeConnection(sourceEndpoint, targetEndpoint);
+                    }
+                  }
+                });
+              },
+              updateConnections: function () {
+                var edges = this.edges;
+                if (edges) {
+                  for (var key in edges) {
+                    if (edges.hasOwnProperty(key)) {
+                      var edge = edges[key];
+                      if (this.id == edge.source) {
+                        //console.log('target', edge.target);
+
+                        this.addConnection(edge.sourceEndpoint, edge.target, edge.targetEndpoint);
+                      }
+                    }
+
+                  }
+                }
+              },
+              getInformation: function () {
+                var result = {};
+
+                result.type = this.type;
+
+                switch (this.type) {
+                  case 'header':
+                    result.label = this.$$('#label').value;
+                    break;
+                  case 'text':
+                    result.label = this.$$('#label').value;
+                    result.description = this.$$('#description').value;
+                    result.value = this.$$('#stringvalue').value;
+                    break;
+                  case 'multiline':
+                    result.label = this.$$('#label').value;
+                    result.description = this.$$('#description').value;
+                    result.value = this.$$('#multilinevalue').value;
+                    break;
+                  case 'number':
+                    result.label = this.$$('#label').value;
+                    result.description = this.$$('#description').value;
+                    result.value = this.$$('#numbervalue').value || 0;
+                    if (this.$$('#min').value) {
+                      result.min = this.$$('#min').value;
+                    }
+                    if (this.$$('#max').value) {
+                      result.max = this.$$('#max').value;
+                    }
+                    break;
+                  case 'slider':
+                    result.label = this.$$('#label').value;
+                    result.description = this.$$('#description').value;
+                    result.value = this.$$('#numbervalue').value || 0;
+                    if (this.$$('#min').value) {
+                      result.min = this.$$('#min').value;
+                    }
+                    if (this.$$('#max').value) {
+                      result.max = this.$$('#max').value;
+                    }
+                    break;
+                  case 'toggle':
+                    result.label = this.$$('#label').value;
+                    result.description = this.$$('#description').value;
+                    result.value = this.$$('#booleanvalue').checked;
+                    break;
+                  case 'dropdown':
+                    result.label = this.$$('#label').value;
+                    result.description = this.$$('#description').value;
+                    var items = this.$$('#items');
+                    result.items = (typeof items.value === 'string') ? items.value.split(',') : items.value;
+                    break;
+                  case 'fixed':
+                    result.description = this.$$('#description').value;
+                    result.value = this.$$('#multilinevalue').value;
+                    break;
+                  default:
+
+                }
+
+                //mapping
+                result.map = [];
+                if (this.type !== 'header') {
+                  this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
+
+                    var inputLabel = '';
+                    var nodeAlias = connection.target.alias;
+
+                    for (var i = 0; i < connection.endpoints.length; i++) {
+                      var endpoint = connection.endpoints[i];
+                      if (endpoint.isTarget) {
+                        var labels = endpoint.getOverlays();
+                        for (var key in labels) {
+                          if (labels.hasOwnProperty(key)) {
+                            inputLabel = labels[key].label;
+                          }
                         }
+                      }
                     }
+                    result.map.push('input.' + nodeAlias + '.' + inputLabel);
+                  });
+                }
 
-                },
-                removeConnection: function (sourceEndpointId, targetEndpointId, fromYjs) {
-                    var self = this;
-                    this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
-                        var targetEndpoint = null;
-                        var sourceEndpoint = null;
-                        for (var i = 0; i < connection.endpoints.length; i++) {
-                            var endpoint = connection.endpoints[i];
-                            if (endpoint.isSource) {
-                                sourceEndpoint = endpoint.getUuid();
-                            }
-                            else if (endpoint.isTarget) {
-                                targetEndpoint = endpoint.getUuid();
-                            }
+                return result;
+              },
+
+              toggleButtonValueChanged: function (event) {
+                if (event.target) {
+                  this.toggleButtonValue = event.target.checked;
+                  this.handleInputChanged(event);
+                }
+
+              },
+              handleTypeChanged: function (event) {
+
+                this.updateType(event.target);
+
+              },
+              updateType: function (element, fromYjs) {
+                this.type = element.value;
+
+                this.style.backgroundColor = '';
+
+                switch (this.type) {
+                  case 'header':
+                    this.style.backgroundColor = '#f00';
+                    break;
+                  case 'text':
+                    this.style.backgroundColor = '#00802b';
+                    break;
+                  case 'multiline':
+                    this.style.backgroundColor = '#00802b';
+                    break;
+                  case 'number':
+                    this.style.backgroundColor = '#007fff';
+                    break;
+                  case 'slider':
+                    this.style.backgroundColor = '#000596';
+                    break;
+                  case 'toggle':
+                    this.style.backgroundColor = '#666';
+                    break;
+                  case 'dropdown':
+                    this.style.backgroundColor = '#ff00bf';
+                    break;
+                  case 'fixed':
+                    this.style.backgroundColor = '#111';
+                    break;
+
+                  default:
+
+                }
+                if (typeof fromYjs === 'undefined' || !fromYjs) {
+                  this.updateYjs(element);
+                }
+
+              },
+
+              showElement: function (element, type) {
+                switch (type) {
+                  case 'header':
+                    return (['label'].indexOf(element) >= 0);
+                  case 'text':
+                    return (['label', 'description', 'stringvalue'].indexOf(element) >= 0);
+                  case 'multiline':
+                    return (['label', 'description', 'multilinevalue'].indexOf(element) >= 0);
+                  case 'number':
+                    return (['label', 'description', 'min', 'max', 'numbervalue'].indexOf(element) >= 0);
+                  case 'slider':
+                    return (['label', 'description', 'min', 'max', 'numbervalue'].indexOf(element) >= 0);
+                  case 'toggle':
+                    return (['label', 'description', 'booleanvalue'].indexOf(element) >= 0);
+                  case 'dropdown':
+                    return (['label', 'description', 'items'].indexOf(element) >= 0);
+                  case 'fixed':
+                    return (['description', 'multilinevalue'].indexOf(element) >= 0);
+
+                  default:
+                    return false;
+                }
+              },
+
+              handleIndexChanged: function (event) {
+                this.indexPos = event.target.value;
+                var map = this.yjs.share.mapperContainers.get(this.id);
+                map.set('index', this.indexPos);
+              },
+              handleInputChanged: function (event) {
+                if (event.target == null) {
+                  return;
+                }
+
+                var self = this;
+                var currentElement = event.target;
+                this.debounce('inputupdate', function () {
+                  if (currentElement) {
+                    while (!currentElement.dataset.parent && currentElement.parentNode) {
+                      currentElement = currentElement.parentNode;
+                    }
+                    self.updateYjs(currentElement);
+                  }
+                }, 600);
+              },
+              _generateGUID: function () {
+                function s4() {
+                  return Math.floor((1 + Math.random()) * 0x10000)
+                    .toString(16)
+                    .substring(1);
+                }
+                return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+                  s4() + '-' + s4() + s4() + s4();
+              },
+              prepareStyles: function () {
+                var inputEndpointHoverStyle = {
+                  fillStyle: "#00cc00",
+                  strokeStyle: "#00cc00"
+                };
+
+                var connectorPaintStyle = {
+                  lineWidth: 4,
+                  strokeStyle: "#333",
+                  joinstyle: "round",
+                  outlineColor: "white",
+                  outlineWidth: 2,
+                  dashstyle: '1'
+                }
+                var connectorHoverStyle = {
+                  lineWidth: 4,
+                  strokeStyle: "#00cc00",
+                  outlineWidth: 2,
+                  outlineColor: "#00cc00",
+                  dashstyle: '0'
+                }
+
+                var inputEndpoint = {
+                  endpoint: "Rectangle",
+                  paintStyle: {
+                    strokeStyle: "none",
+                    fillStyle: "#333",
+                    radius: 14
+
+                  },
+                  hoverPaintStyle: inputEndpointHoverStyle,
+                  maxConnections: -1,
+                  dropOptions: { hoverClass: "hover", activeClass: "active" },
+                  isSource: true,
+                  connector: ["Bezier"],
+                  connectorStyle: connectorPaintStyle,
+                  connectorHoverStyle: connectorHoverStyle,
+                  dragOptions: {},
+                }
+
+                this.jsPlumbStyles.inputEndpoint = inputEndpoint;
+              },
+              repaint: function () {
+                try {
+                  this.jsPlumbInstance.repaint(this, { left: this.posX, top: this.posY });
+                }
+                catch (e) {
+
+                }
+
+              },
+              updateYjs: function (element) {
+
+                if (element == null) {
+                  return;
+                }
+
+                try {
+                  var map = this.yjs.share.mapperContainers.get(this.id);
+
+                  var value;
+                  if (element.id == 'booleanvalue') {
+                    value = element.checked;
+                  } else {
+                    value = element.value;
+                  }
+
+                  map.set(element.id + '', value);
+
+                }
+                catch (e) {
+
+                }
+
+              },
+              updateIndex: function (index) {
+                if (this.index != index) {
+                  this.index = index;
+                  var map = this.yjs.share.mapperContainers.get(this.id);
+                  map.set('index', index);
+                }
+              },
+              update: function (options, fromYjs) {
+
+                if (typeof options === 'object') {
+
+                  for (var key in options) {
+                    if (options.hasOwnProperty(key)) {
+
+                      if (key == 'index') {
+                        if (this.indexPos != options.index) {
+                          this.indexPos = options.index;
+                        }
+                      }
+                      else if (key == 'booleanvalue') {
+                        var element = this.$$('#booleanvalue');
+                        if (element.checked != options.booleanvalue) {
+                          element.checked = options.booleanvalue;
+                        }
+                      }
+                      else if (key == 'value') {
+                        if (typeof options.type === 'string') {
+
+                          switch (this.type) {
+                            case 'header':
+                              break;
+                            case 'text':
+                              var element = this.$$('#stringvalue');
+                              element.value = options[key];
+                              break;
+                            case 'multiline':
+                              var element = this.$$('#multilinevalue');
+                              element.value = options[key];
+                              break;
+                            case 'number':
+                            case 'slider':
+                              var element = this.$$('#numbervalue');
+                              element.value = options[key];
+                              break;
+                            case 'toggle':
+                              var element = this.$$('#booleanvalue');
+                              element.checked = options[key];
+                              break;
+                            case 'dropdown':
+                              var element = this.$$('#items');
+                              element.value = options[key].join(',') || options[key];//(Array.isArray(options[key])) ? options[key].join(';') : options[key];
+                              break;
+                            case 'fixed':
+                              var element = this.$$('#multilinevalue');
+                              element.value = options[key];
+                            default:
+
+                          }
+
+
 
                         }
-                        //console.log('weg')
-                        if (sourceEndpoint == sourceEndpointId && targetEndpoint == targetEndpointId) {
+                      }
+                      else if (key == 'map') {
 
-                            self.jsPlumbInstance.detach(connection);
+                      }
+                      else if (key == 'position') {
+                        this.updatePos( options[key].x , options[key].y, fromYjs);
+                      }
+                      else {
+                        var element = this.$$('#' + key);
+                        if (element && element.value != options[key]) {
+                          element.value = options[key];
+
+                          if (element.id == 'type') {
+
+                            this.updateType(element, true);
+                          }
                         }
-                    });
-
-                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
-                        this.yjs.share.edges.delete(sourceEndpointId + targetEndpointId);
+                      }
                     }
+                  }
+                }
+              },
+              updatePos: function (x, y, fromYjs) {
+                if (typeof x !== 'undefined' && typeof y !== 'undefined') {
+                  if (this.posX == x && this.posY == y) {
+                    return;
+                  }
+                  this.posX = x;
+                  this.posY = y;
+                }
 
-                },
-                clearConnections: function () {
-                    var self = this;
-                    this.jsPlumbInstance.select().each(function (connection) {
-                        if (connection.sourceId == self.id || connection.targetId == self.id) {
-                            var targetEndpoint = null;
-                            var sourceEndpoint = null;
-                            for (var i = 0; i < connection.endpoints.length; i++) {
-                                var endpoint = connection.endpoints[i];
-                                if (endpoint.isSource) {
-                                    sourceEndpoint = endpoint.getUuid();
-                                }
-                                else if (endpoint.isTarget) {
-                                    targetEndpoint = endpoint.getUuid();
-                                }
+                this.style.left = this.posX + 'px';
+                this.style.top = this.posY + 'px';
 
-                            }
-
-                            if (targetEndpoint && sourceEndpoint) {
-                                self.removeConnection(sourceEndpoint, targetEndpoint);
-                            }
-                        }
-                    });
-                },
-                updateConnections: function () {
-                    var edges = this.edges;
-                    if (edges) {
-                        for (var key in edges) {
-                            if (edges.hasOwnProperty(key)) {
-                                var edge = edges[key];
-                                if (this.id == edge.source) {
-                                    //console.log('target', edge.target);
-
-                                    this.addConnection(edge.sourceEndpoint, edge.target, edge.targetEndpoint);
-                                }
-                            }
-
-                        }
-                    }
-                },
-                getInformation: function () {
-                    var result = {};
-
-                    result.type = this.type;
-
-                    switch (this.type) {
-                        case 'header':
-                            result.label = this.$$('#label').value;
-                            break;
-                        case 'text':
-                            result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;
-                            result.value = this.$$('#stringvalue').value;
-                            break;
-                        case 'multiline':
-                            result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;
-                            result.value = this.$$('#multilinevalue').value;
-                            break;
-                        case 'number':
-                            result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;
-                            result.value = this.$$('#numbervalue').value || 0;
-                            if (this.$$('#min').value) {
-                                result.min = this.$$('#min').value;
-                            }
-                            if (this.$$('#max').value) {
-                                result.max = this.$$('#max').value;
-                            }
-                            break;
-                        case 'slider':
-                            result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;
-                            result.value = this.$$('#numbervalue').value || 0;
-                            if (this.$$('#min').value) {
-                                result.min = this.$$('#min').value;
-                            }
-                            if (this.$$('#max').value) {
-                                result.max = this.$$('#max').value;
-                            }
-                            break;
-                        case 'toggle':
-                            result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;
-                            result.value = this.$$('#booleanvalue').checked;
-                            break;
-                        case 'dropdown':
-                            result.label = this.$$('#label').value;
-                            result.description = this.$$('#description').value;       
-                            var items = this.$$('#items');
-                            result.items = (typeof items.value === 'string') ? items.value.split(',') : items.value;
-                            break;
-                        case 'fixed':
-                            result.description = this.$$('#description').value;
-                            result.value = this.$$('#multilinevalue').value;
-                            break;
-                        default:
-
-                    }
-
-                    //mapping
-                    result.map = [];
-                    if (this.type !== 'header') {
-                        this.jsPlumbInstance.select({ source: this.id }).each(function (connection) {
-
-                            var inputLabel = '';
-                            var nodeAlias = connection.target.alias;
-
-                            for (var i = 0; i < connection.endpoints.length; i++) {
-                                var endpoint = connection.endpoints[i];
-                                if (endpoint.isTarget) {
-                                    var labels = endpoint.getOverlays();
-                                    for (var key in labels) {
-                                        if (labels.hasOwnProperty(key)) {
-                                            inputLabel = labels[key].label;
-                                        }
-                                    }
-                                }
-                            }
-                            result.map.push('input.' + nodeAlias + '.' + inputLabel);
-                        });
-                    }
-
-                    return result;
-                },
-
-                toggleButtonValueChanged: function (event) {
-                    if (event.target) {
-                        this.toggleButtonValue = event.target.checked;
-                        this.handleInputChanged(event);
-                    }
-
-                },
-                handleTypeChanged: function (event) {
-
-                    this.updateType(event.target);
-
-                },
-                updateType: function (element, fromYjs) {
-                    this.type = element.value;
-
-                    this.style.backgroundColor = '';
-
-                    switch (this.type) {
-                        case 'header':
-                            this.style.backgroundColor = '#f00';
-                            break;
-                        case 'text':
-                            this.style.backgroundColor = '#00802b';
-                            break;
-                        case 'multiline':
-                            this.style.backgroundColor = '#00802b';
-                            break;
-                        case 'number':
-                            this.style.backgroundColor = '#007fff';
-                            break;
-                        case 'slider':
-                            this.style.backgroundColor = '#000596';
-                            break;
-                        case 'toggle':
-                            this.style.backgroundColor = '#666';
-                            break;
-                        case 'dropdown':
-                            this.style.backgroundColor = '#ff00bf';
-                            break;
-                        case 'fixed':
-                            this.style.backgroundColor = '#111';
-                            break;
-
-                        default:
-
-                    }
-                    if (typeof fromYjs === 'undefined' || !fromYjs) {
-                        this.updateYjs(element);
-                    }
-
-                },
-
-                showElement: function (element, type) {
-                    switch (type) {
-                        case 'header':
-                            return (['label'].indexOf(element) >= 0);
-                        case 'text':
-                            return (['label', 'description', 'stringvalue'].indexOf(element) >= 0);
-                        case 'multiline':
-                            return (['label', 'description', 'multilinevalue'].indexOf(element) >= 0);
-                        case 'number':
-                            return (['label', 'description', 'min', 'max', 'numbervalue'].indexOf(element) >= 0);
-                        case 'slider':
-                            return (['label', 'description', 'min', 'max', 'numbervalue'].indexOf(element) >= 0);
-                        case 'toggle':
-                            return (['label', 'description', 'booleanvalue'].indexOf(element) >= 0);
-                        case 'dropdown':
-                            return (['label', 'description', 'items'].indexOf(element) >= 0);
-                        case 'fixed':
-                            return (['description', 'multilinevalue'].indexOf(element) >= 0);
-
-                        default:
-                            return false;
-                    }
-                },
-
-                handleIndexChanged: function (event) {
-                    this.indexPos = event.target.value;
+                this.repaint();
+                if (typeof fromYjs === 'undefined' || fromYjs == false) {
+                  if (this.yjs) {
                     var map = this.yjs.share.mapperContainers.get(this.id);
-                    map.set('index', this.indexPos);
-                },
-                handleInputChanged: function (event) {
-                    if (event.target == null) {
-                        return;
+
+                    if (map) {
+                      map.set('position', { x: this.posX, y: this.posY });
                     }
 
-                    var self = this;
-                    var currentElement = event.target;
-                    this.debounce('inputupdate', function () {
-                        if (currentElement) {
-                            while (!currentElement.dataset.parent && currentElement.parentNode) {
-                                currentElement = currentElement.parentNode;
-                            }
-                            self.updateYjs(currentElement);
-                        }
-                    }, 600);
-                },
-                _generateGUID: function () {
-                    function s4() {
-                        return Math.floor((1 + Math.random()) * 0x10000)
-                          .toString(16)
-                          .substring(1);
-                    }
-                    return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                      s4() + '-' + s4() + s4() + s4();
-                },
-                prepareStyles: function () {
-                    var inputEndpointHoverStyle = {
-                        fillStyle: "#00cc00",
-                        strokeStyle: "#00cc00"
-                    };
-
-                    var connectorPaintStyle = {
-                        lineWidth: 4,
-                        strokeStyle: "#333",
-                        joinstyle: "round",
-                        outlineColor: "white",
-                        outlineWidth: 2,
-                        dashstyle: '1'
-                    }
-                    var connectorHoverStyle = {
-                        lineWidth: 4,
-                        strokeStyle: "#00cc00",
-                        outlineWidth: 2,
-                        outlineColor: "#00cc00",
-                        dashstyle: '0'
-                    }
-
-                    var inputEndpoint = {
-                        endpoint: "Rectangle",
-                        paintStyle: {
-                            strokeStyle: "none",
-                            fillStyle: "#333",
-                            radius: 14
-
-                        },
-                        hoverPaintStyle: inputEndpointHoverStyle,
-                        maxConnections: -1,
-                        dropOptions: { hoverClass: "hover", activeClass: "active" },
-                        isSource: true,
-                        connector: ["Bezier"],
-                        connectorStyle: connectorPaintStyle,
-                        connectorHoverStyle: connectorHoverStyle,
-                        dragOptions: {},
-                    }
-
-                    this.jsPlumbStyles.inputEndpoint = inputEndpoint;
-                },
-                repaint: function () {
-                    try {
-                        this.jsPlumbInstance.repaint(this, { left: this.posX, top: this.posY });
-                    }
-                    catch (e) {
-
-                    }
-
-                },
-                updateYjs: function (element) {
-
-                    if (element == null) {
-                        return;
-                    }
-
-                    try {
-                        var map = this.yjs.share.mapperContainers.get(this.id);
-
-                        var value;
-                        if (element.id == 'booleanvalue') {
-                            value = element.checked;
-                        } else {
-                            value = element.value;
-                        }
-
-                        map.set(element.id + '', value);
-
-                    }
-                    catch (e) {
-
-                    }
-
-                },
-                updateIndex: function (index) {
-                    if (this.index != index) {
-                        this.index = index;
-                        var map = this.yjs.share.mapperContainers.get(this.id);
-                        map.set('index', index);
-                    }
-                },
-                update: function (options, fromYjs) {
-
-                    if (typeof options === 'object') {
-
-                        for (var key in options) {
-                            if (options.hasOwnProperty(key)) {
-
-                                if (key == 'index') {
-                                    if (this.indexPos != options.index) {
-                                        this.indexPos = options.index;                                        
-                                    }
-                                }
-                                else if (key == 'booleanvalue') {
-                                    var element = this.$$('#booleanvalue');
-                                    if (element.checked != options.booleanvalue) {
-                                        element.checked = options.booleanvalue;
-                                    }
-                                }
-                                else if (key == 'value') {
-                                    if (typeof options.type === 'string') {
-
-                                        switch (this.type) {
-                                            case 'header':
-                                                break;
-                                            case 'text':
-                                                var element = this.$$('#stringvalue');
-                                                element.value = options[key];
-                                                break;
-                                            case 'multiline':
-                                                var element = this.$$('#multilinevalue');
-                                                element.value = options[key];
-                                                break;
-                                            case 'number':
-                                            case 'slider':
-                                                var element = this.$$('#numbervalue');
-                                                element.value = options[key];
-                                                break;
-                                            case 'toggle':
-                                                var element = this.$$('#booleanvalue');
-                                                element.checked = options[key];
-                                                break;
-                                            case 'dropdown':
-                                                var element = this.$$('#items');
-                                                element.value = options[key].join(',') || options[key];//(Array.isArray(options[key])) ? options[key].join(';') : options[key];
-                                                break;
-                                            case 'fixed':
-                                                var element = this.$$('#multilinevalue');
-                                                element.value = options[key];
-                                            default:
-
-                                        }
-
-
-
-                                    }
-                                }
-                                else if (key == 'map') {
-
-                                }
-                                else if (key == 'position') {
-                                    this.updatePos( options[key].x , options[key].y, fromYjs);
-                                }                               
-                                else {
-                                    var element = this.$$('#' + key);
-                                    if (element && element.value != options[key]) {
-                                        element.value = options[key];
-
-                                        if (element.id == 'type') {
-
-                                            this.updateType(element, true);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                updatePos: function (x, y, fromYjs) {
-                    if (typeof x !== 'undefined' && typeof y !== 'undefined') {
-                        if (this.posX == x && this.posY == y) {
-                            return;
-                        }
-                        this.posX = x;
-                        this.posY = y;
-                    }
-
-                    this.style.left = this.posX + 'px';
-                    this.style.top = this.posY + 'px';
-
-                    this.repaint();
-                    if (typeof fromYjs === 'undefined' || fromYjs == false) {
-                        if (this.yjs) {
-                            var map = this.yjs.share.mapperContainers.get(this.id);
-
-                            if (map) {
-                                map.set('position', { x: this.posX, y: this.posY });
-                            }
-
-                        }
-                    }
-                },
+                  }
+                }
+              },
             });
-        })();
+          })();
+        }
     </script>
 </dom-module>
