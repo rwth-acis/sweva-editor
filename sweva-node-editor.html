@@ -84,167 +84,324 @@
     <script src="../ace-builds/src-min/ace.js"></script>
     <script src="../esprima/esprima.js"></script>
     <script>
-        (function () {
-            'use strict';
+      if(Polymer.Element) {
+        //version 2 code
+        class SwevaNodeEditor extends Polymer.Element {
+          static get is() {
+            return 'sweva-node-editor';
+          }
 
-            Polymer({
-                is: 'sweva-node-editor',
-                properties: {
-                    code: {
-                        type: String,
-                        value: ''
-                    },
-                    editor: {
-                        type: Object,
-                        value: null
-                    },
-                    yjs: {
-                        type: Object,
-                        value: null
-                    },
-                   
-                    title: {
-                        type: String,
-                        value: 'Edit'
-                    },
-                    currentId: {
-                        type: String,
-                        value: ''
-                    },
-                    lastId: {
-                        type: String,
-                        value: ''
-                    },
-                    isOpen: {
-                        type: Boolean,
-                        value: false
-                    },
-                    timer: {
-                        type: Object,
-                        value: null
-                    }
+          static get properties() {
+            return {
+                /* properties meta data object just like 1.x */
+              code: {
+                type: String,
+                value: ''
+              },
+              editor: {
+                type: Object,
+                value: null
+              },
+              yjs: {
+                type: Object,
+                value: null
+              },
+              title: {
+                type: String,
+                value: 'Edit'
+              },
+              currentId: {
+                type: String,
+                value: ''
+              },
+              lastId: {
+                type: String,
+                value: ''
+              },
+              isOpen: {
+                type: Boolean,
+                value: false
+              },
+              timer: {
+                type: Object,
+                value: null
+              }
+            }
+          }
 
-                },
-                ready: function () {
-                   
-                },
-                open: function (title) {
-                    this.title = title;
-                    var self = this;
-                    this.$$('paper-dialog').open();
-                    this.isOpen = true;
-                    this.editor.resize();
-                    
-                    this.editor.focus();
-                    setTimeout(function () {
-                        self.editor.resize();
-                    }, 200);
-                    
-                },
-                handleAccept: function () {
-                    var code = this.editor.getValue();
-                    
-                    var errors = this.syntaxCheck(code);
-                    if (errors.length > 0) {
-                        var dialog = this.$$('paper-dialog.errors');
-                        if (dialog) {
-                            dialog.open();
-                        }
-                        
-                    } else {
-                        var dialog = this.$$('paper-dialog.main');
-                        if (dialog) {
+          ready() {
+            super.ready();
 
-                           
-
-
-                            this.isOpen = false;
-                            dialog.close();
-                        }
-                    }
-                    this.node.updateCode(code);
-                    this.fire('edited', { id: this.currentId, code: code });
-                },
-                handleRestore: function () {
-                    this.editor.setValue(this.node.code, 1);
-                },
-                syntaxCheck: function (code){
-                    code = 'function a(){return ' + code + '}';
-                    var errors=[];
-                    try {
-                        var syntax = esprima.parse(code, { tolerant: true, loc: true });
-                        for (var i = 0; i < syntax.errors.length; i++) {
-                            errors.push({
-                                column: syntax.errors[i].column,
-                                text: syntax.errors[i].description,
-                                row: syntax.errors[i].lineNumber-1,
-                                type: 'error'
-                            })
-                        }
-                                            
-                    }
-                    catch (e) {
-                        errors.push({
-                            column: e.column,
-                            text: e.description,
-                            row: e.lineNumber-1,
-                            type: 'error'
-                        });
-
-                    }
-                    return errors;
-                },
-                findErrors: function () {
-                    var code = this.editor.getValue();
-                    var errors = this.syntaxCheck(code);
-                    this.editor.getSession().setAnnotations(errors);
-                },
-                init: function (yjs, node) {
-
-                    this.node = node;
-                    this.yjs = yjs;
-
-                    if(!this.initialized && this.editor){             
-                        
-                        this.node.sharedCode.bind(this.editor);
-                        this.initialized = true;
-                    }
-                },
-               
-                attached: function () {
-                    var editor = this.$.editor;
-                    this.editor = ace.edit(editor);
-                    this.editor.$blockScrolling = Infinity;
-                   
-                  
-
-                    //editor.setTheme("ace/theme/monokai");
-                    this.editor.getSession().setMode("ace/mode/javascript");
-                    this.editor.getSession().setUseWorker(false);
-                    var self = this;
-                    this.editor.getSession().on('change', function () {
-                        
-                        self.debounce('editorDebounce', function () {
-                            if (self.isOpen) {
-                                self.findErrors();
-                            }
-                        }, 1000);
-                    });
-
-                    
-                    var dialog = this.$$('paper-dialog.main');
-                    dialog.addEventListener('iron-overlay-closed', function (customEvent) {
-                        self.isOpen = false;
-                        self.editor.resize();
-                    });
-
-                    if (!this.initialized && this.node) {
-
-                        this.node.sharedCode.bind(this.editor);
-                        this.initialized = true;
-                    }
-                }
+            //attached funcfion code
+            Polymer.RenderStatus.beforeNextRender(this, function() {
+              var editor = this.$.editor;
+              this.editor = ace.edit(editor);
+              this.editor.$blockScrolling = Infinity;
+              //editor.setTheme("ace/theme/monokai");
+              this.editor.getSession().setMode("ace/mode/javascript");
+              this.editor.getSession().setUseWorker(false);
+              var self = this;
+              this.editor.getSession().on('change', function () {
+                self.debounce('editorDebounce', function () {
+                  if (self.isOpen) {
+                    self.findErrors();
+                  }
+                }, 1000);
+              });
+              var dialog = this.shadowRoot.querySelector('paper-dialog.main');
+              dialog.addEventListener('iron-overlay-closed', function (customEvent) {
+                self.isOpen = false;
+                self.editor.resize();
+              });
+              if (!this.initialized && this.node) {
+                this.node.sharedCode.bind(this.editor);
+                this.initialized = true;
+              }
             });
+          }
+
+          open(title) {
+            this.title = title;
+            var self = this;
+            this.shadowRoot.querySelector('paper-dialog').open();
+            this.isOpen = true;
+            this.editor.resize();
+            this.editor.focus();
+            setTimeout(function () {
+              self.editor.resize();
+            }, 200);
+          }
+
+          handleAccept() {
+            var code = this.editor.getValue();
+            var errors = this.syntaxCheck(code);
+            if (errors.length > 0) {
+              var dialog = this.shadowRoot.querySelector('paper-dialog.errors');
+              if (dialog) {
+                dialog.open();
+              }
+            } else {
+              var dialog = this.shadowRoot.querySelector('paper-dialog.main');
+              if (dialog) {
+                this.isOpen = false;
+                dialog.close();
+              }
+            }
+            this.node.updateCode(code);
+            this.dispatchEvent(new CustomEvent('edited', { bubbles: true, composed: true , detail: { id: this.currentId, code: code }}));
+          }
+
+          handleRestore() {
+            this.editor.setValue(this.node.code, 1);
+          }
+
+          syntaxCheck(code){
+            code = 'function a(){return ' + code + '}';
+            var errors=[];
+            try {
+              var syntax = esprima.parse(code, { tolerant: true, loc: true });
+              for (var i = 0; i < syntax.errors.length; i++) {
+                errors.push({
+                  column: syntax.errors[i].column,
+                  text: syntax.errors[i].description,
+                  row: syntax.errors[i].lineNumber-1,
+                  type: 'error'
+                })
+              }
+            }
+            catch (e) {
+              errors.push({
+                column: e.column,
+                text: e.description,
+                row: e.lineNumber-1,
+                type: 'error'
+              });
+            }
+            return errors;
+          }
+
+          findErrors() {
+            var code = this.editor.getValue();
+            var errors = this.syntaxCheck(code);
+            this.editor.getSession().setAnnotations(errors);
+          }
+
+          init(yjs, node) {
+            this.node = node;
+            this.yjs = yjs;
+            if(!this.initialized && this.editor){
+              this.node.sharedCode.bind(this.editor);
+              this.initialized = true;
+            }
+          }
+        }
+
+        // Register custom element definition using standard platform API
+        customElements.define(SwevaNodeEditor.is, SwevaNodeEditor);
+      } else {
+        //version 1 code
+        (function () {
+          'use strict';
+
+          Polymer({
+            is: 'sweva-node-editor',
+            properties: {
+              code: {
+                type: String,
+                value: ''
+              },
+              editor: {
+                type: Object,
+                value: null
+              },
+              yjs: {
+                type: Object,
+                value: null
+              },
+
+              title: {
+                type: String,
+                value: 'Edit'
+              },
+              currentId: {
+                type: String,
+                value: ''
+              },
+              lastId: {
+                type: String,
+                value: ''
+              },
+              isOpen: {
+                type: Boolean,
+                value: false
+              },
+              timer: {
+                type: Object,
+                value: null
+              }
+
+            },
+            ready: function () {
+
+            },
+            open: function (title) {
+              this.title = title;
+              var self = this;
+              this.$$('paper-dialog').open();
+              this.isOpen = true;
+              this.editor.resize();
+
+              this.editor.focus();
+              setTimeout(function () {
+                self.editor.resize();
+              }, 200);
+
+            },
+            handleAccept: function () {
+              var code = this.editor.getValue();
+
+              var errors = this.syntaxCheck(code);
+              if (errors.length > 0) {
+                var dialog = this.$$('paper-dialog.errors');
+                if (dialog) {
+                  dialog.open();
+                }
+
+              } else {
+                var dialog = this.$$('paper-dialog.main');
+                if (dialog) {
+
+
+
+
+                  this.isOpen = false;
+                  dialog.close();
+                }
+              }
+              this.node.updateCode(code);
+              this.fire('edited', { id: this.currentId, code: code });
+            },
+            handleRestore: function () {
+              this.editor.setValue(this.node.code, 1);
+            },
+            syntaxCheck: function (code){
+              code = 'function a(){return ' + code + '}';
+              var errors=[];
+              try {
+                var syntax = esprima.parse(code, { tolerant: true, loc: true });
+                for (var i = 0; i < syntax.errors.length; i++) {
+                  errors.push({
+                    column: syntax.errors[i].column,
+                    text: syntax.errors[i].description,
+                    row: syntax.errors[i].lineNumber-1,
+                    type: 'error'
+                  })
+                }
+
+              }
+              catch (e) {
+                errors.push({
+                  column: e.column,
+                  text: e.description,
+                  row: e.lineNumber-1,
+                  type: 'error'
+                });
+
+              }
+              return errors;
+            },
+            findErrors: function () {
+              var code = this.editor.getValue();
+              var errors = this.syntaxCheck(code);
+              this.editor.getSession().setAnnotations(errors);
+            },
+            init: function (yjs, node) {
+
+              this.node = node;
+              this.yjs = yjs;
+
+              if(!this.initialized && this.editor){
+
+                this.node.sharedCode.bind(this.editor);
+                this.initialized = true;
+              }
+            },
+
+            attached: function () {
+              var editor = this.$.editor;
+              this.editor = ace.edit(editor);
+              this.editor.$blockScrolling = Infinity;
+
+
+
+              //editor.setTheme("ace/theme/monokai");
+              this.editor.getSession().setMode("ace/mode/javascript");
+              this.editor.getSession().setUseWorker(false);
+              var self = this;
+              this.editor.getSession().on('change', function () {
+
+                self.debounce('editorDebounce', function () {
+                  if (self.isOpen) {
+                    self.findErrors();
+                  }
+                }, 1000);
+              });
+
+
+              var dialog = this.$$('paper-dialog.main');
+              dialog.addEventListener('iron-overlay-closed', function (customEvent) {
+                self.isOpen = false;
+                self.editor.resize();
+              });
+
+              if (!this.initialized && this.node) {
+
+                this.node.sharedCode.bind(this.editor);
+                this.initialized = true;
+              }
+            }
+          });
         })();
+      }
     </script>
 </dom-module>
