@@ -548,14 +548,23 @@
               }
               var self = this;
               var currentElement = event.target;
-              this.debounce('inputupdate', function () {
+              /*this.debounce('inputupdate', function () {
                 if (currentElement) {
                   while (!currentElement.dataset.parent && currentElement.parentNode) {
                     currentElement = currentElement.parentNode;
                   }
                   self.updateYjs(currentElement);
                 }
-              }, 600);
+              }, 600); */
+              this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeOut.after(600),
+                () => {
+                  if (currentElement) {
+                    while (!currentElement.dataset.parent && currentElement.parentNode) {
+                      currentElement = currentElement.parentNode;
+                    }
+                    self.updateYjs(currentElement);
+                  }
+                });
             }
 
             _generateGUID() {
