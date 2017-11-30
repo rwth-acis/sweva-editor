@@ -242,7 +242,7 @@ Example:
             },
             room: {
               type: String,
-              value: '',
+              value: function() {return 'string' + Math.random();},
               observer: '_roomChanged'
             },
             visualization: {
@@ -604,17 +604,7 @@ Example:
           }).then(function (y) {
             self.yjs = y;
             var yjs = y;
-            //yjs.share.text.bind(document.querySelector("#editor-dialog #editor"))
-            var userManager = self.shadowRoot.querySelector('sweva-user-manager');
-            userManager.init(yjs);
-            var userChat = self.shadowRoot.querySelector('sweva-chat');
-            userChat.init(yjs);
-            var nodeManager = self.shadowRoot.querySelector('sweva-node-manager');
-            nodeManager.init(yjs);
-            var editor = self.shadowRoot.querySelector('#editor-dialog');
-            editor.init(yjs);
-            var canvas = self.shadowRoot.querySelector('#canvas-container');
-            canvas.pan(2, 2);
+
             yjs.share.project.observe(function (event) {
               self.loaded = true;
               var code = yjs.share.project.get('code') || '';
@@ -628,6 +618,18 @@ Example:
               // self.project.input = input;
               //self.project.data = data;
             });
+
+            //yjs.share.text.bind(document.querySelector("#editor-dialog #editor"))
+            var userManager = self.shadowRoot.querySelector('sweva-user-manager');
+            userManager.init(yjs);
+            var userChat = self.shadowRoot.querySelector('sweva-chat');
+            userChat.init(yjs);
+            var nodeManager = self.shadowRoot.querySelector('sweva-node-manager');
+            nodeManager.init(yjs);
+            var editor = self.shadowRoot.querySelector('#editor-dialog');
+            editor.init(yjs);
+            var canvas = self.shadowRoot.querySelector('#canvas-container');
+            canvas.pan(2, 2);
             console.log('editor loaded');
             setTimeout(function () {
               if (Object.keys(yjs.share.nodes.opContents).length == 0) {

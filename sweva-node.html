@@ -660,7 +660,7 @@
             }
             for (var i = 0; i < dataIn.length; i++) {
               var labelId = nodeId + dataIn[i] + 'label';
-              var endpoint = self.jsPlumbInstance.addEndpoint(nodeId, self.jsPlumbStyles.nodeDataInEndpoint, {
+              var endpoint = self.jsPlumbInstance.addEndpoint(self, self.jsPlumbStyles.nodeDataInEndpoint, {
                 anchor: [0, stepSizeIn * (i + 1), -1, 0],
                 uuid: nodeId + dataIn[i]+'in',
                 overlays: [
@@ -708,7 +708,7 @@
             }
             var stepSizeOut = (1) / (dataOut.length + 1);
             for (var i = 0; i < dataOut.length; i++) {
-              var endpoint = self.jsPlumbInstance.addEndpoint(nodeId, self.jsPlumbStyles.nodeDataOutEndpoint, {
+              var endpoint = self.jsPlumbInstance.addEndpoint(self, self.jsPlumbStyles.nodeDataOutEndpoint, {
                 anchor: [1, stepSizeOut * (i + 1), 1, 0],
                 uuid: nodeId + dataOut[i] + 'out',
                 overlays: [
@@ -757,7 +757,7 @@
             }
             var stepSizeOut = (1) / (input.length + 1);
             for (var i = 0; i < input.length; i++) {
-              var endpoint = self.jsPlumbInstance.addEndpoint(nodeId, self.jsPlumbStyles.nodeInputEndpoint, {
+              var endpoint = self.jsPlumbInstance.addEndpoint(self, self.jsPlumbStyles.nodeInputEndpoint, {
                 anchor: [stepSizeOut * (i + 1), 0 , 0, -1],
                 uuid: nodeId + input[i] + 'input',
                 overlays: [
@@ -1588,7 +1588,7 @@
               for (var i = 0; i < dataIn.length; i++) {
 
                 var labelId = nodeId + dataIn[i] + 'label';
-                var endpoint = self.jsPlumbInstance.addEndpoint(nodeId, self.jsPlumbStyles.nodeDataInEndpoint, {
+                var endpoint = self.jsPlumbInstance.addEndpoint(self, self.jsPlumbStyles.nodeDataInEndpoint, {
                   anchor: [0, stepSizeIn * (i + 1), -1, 0],
                   uuid: nodeId + dataIn[i]+'in',
                   overlays: [
@@ -1644,7 +1644,7 @@
 
               var stepSizeOut = (1) / (dataOut.length + 1);
               for (var i = 0; i < dataOut.length; i++) {
-                var endpoint = self.jsPlumbInstance.addEndpoint(nodeId, self.jsPlumbStyles.nodeDataOutEndpoint, {
+                var endpoint = self.jsPlumbInstance.addEndpoint(self, self.jsPlumbStyles.nodeDataOutEndpoint, {
                   anchor: [1, stepSizeOut * (i + 1), 1, 0],
                   uuid: nodeId + dataOut[i] + 'out',
                   overlays: [
@@ -1697,7 +1697,7 @@
               }
               var stepSizeOut = (1) / (input.length + 1);
               for (var i = 0; i < input.length; i++) {
-                var endpoint = self.jsPlumbInstance.addEndpoint(nodeId, self.jsPlumbStyles.nodeInputEndpoint, {
+                var endpoint = self.jsPlumbInstance.addEndpoint(self, self.jsPlumbStyles.nodeInputEndpoint, {
                   anchor: [stepSizeOut * (i + 1), 0 , 0, -1],
                   uuid: nodeId + input[i] + 'input',
                   overlays: [
