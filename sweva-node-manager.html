@@ -91,7 +91,9 @@
         handleNodeSelected(event) {
 
           this.selectedNode = event.detail;
-          var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
+          var nodes =  this.shadowRoot.querySelectorAll('sweva-node');
+          //problem with the document and shadowRoot, we have to find a fix to this or pass the shadow root element to every function requiring the shadow root
+          //var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
           for (var i = 0; i < nodes.length; i++) {
             // nodes[i].toggleClass('selected', nodes[i].id == this.selectedNode.id);
             if (nodes[i].id == this.selectedNode.id) {
@@ -431,7 +433,7 @@
         createNode(options) {
           var self = this;
           var node = document.createElement('sweva-node');
-          Polymer.dom(this).appendChild(node);
+          this.shadowRoot.appendChild(node);
           var func = function (resolve, reject) {
             var self = this;
             var center = {};
@@ -472,7 +474,8 @@
 
         yjsCreateNode(nodeData) {
           var node = document.createElement('sweva-node');
-          Polymer.dom(this).appendChild(node);
+          this.shadowRoot.appendChild(node);
+//          Polymer.dom(this).appendChild(node);
           node.init(this.jsPlumbInstance, this.yjs, this.edges, nodeData.alias,
             nodeData.code, nodeData.fixed, { x: nodeData.x, y: nodeData.y }, nodeData.id, true);
           node.addEventListener('created', this.handleNodeCreated);
@@ -653,7 +656,7 @@
                     var fixed = map.get('fixed') ? true : false;
                     //var code = codeObj.toString();
                     //console.log(code);
-                    var node = document.getElementById(event.name);
+                    var node = self.shadowRoot.querySelector(event.name);
                     if (!node) {
                       node = self.yjsCreateNode({ id: event.name, alias: alias, code: code, fixed: fixed, x: position.x, y: position.y });
                     }
