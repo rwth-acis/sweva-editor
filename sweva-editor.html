@@ -80,6 +80,7 @@ Example:
         background: #fff;
         width: 100%;
       }
+
       paper-spinner {
         position: absolute;
         left: 50%;
@@ -97,8 +98,7 @@ Example:
                   canvas-offset-x="{{canvasOffset.x}}"
                   canvas-offset-y="{{canvasOffset.y}}"
                   on-canvasmousemove="handleCanvasMouseMove"
-                  on-viewportchanged="handleViewPortChanced"
-                  canvas="{{canvas}}">
+                  on-viewportchanged="handleViewPortChanced">
 
       <sweva-cursor-awareness id="cursor-awareness"></sweva-cursor-awareness>
       <sweva-node-manager id="node-manager"
@@ -258,14 +258,18 @@ Example:
             value: false
           },
           canvas: {
-            type: String
+            type: Object
           }
         }
       }
 
       ready() {
         super.ready();
-        // RenderStatus replaces the attached function in Polymer 2.0
+
+        this.canvas = this.$['canvas-container'];
+      }
+
+      attached() {
         Polymer.RenderStatus.beforeNextRender(this, function () {
           this.shadowRoot.querySelector('#visualization-select').fitInto = this;
         });
@@ -512,7 +516,7 @@ Example:
       }
 
       handleJsPlumbLoaded(event) {
-        var canvas = this.shadowRoot.querySelector('sweva-canvas');
+        var canvas = this.$['canvas-container'];
         if (canvas) {
           canvas.jsPlumbInstance = event.detail;
         }
@@ -643,7 +647,7 @@ Example:
           nodeManager.init(yjs);
           var editor = self.shadowRoot.querySelector('#editor-dialog');
           editor.init(yjs);
-          var canvas = self.shadowRoot.querySelector('#canvas-container');
+          var canvas = self.$['canvas-container'];
           canvas.pan(2, 2);
           console.log('editor loaded');
           setTimeout(function () {
