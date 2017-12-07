@@ -121,7 +121,11 @@
                       minZoom: {
                           type: Number,
                           value: 0.2
-                      }
+                      },
+                    canvas: {
+                        type: Object,
+                      notify: true
+                    }
                   }
               }
 
@@ -138,6 +142,8 @@
                       floating + commaSpace +
                       floating + '\\)$'
                   );
+
+                  this.canvas = this.$.canvas;
 
                   // RenderStatus replaces the attached function in Polymer 2.0
                   Polymer.RenderStatus.beforeNextRender(this, function () {

@@ -76,6 +76,9 @@
             visualization: {
               type: String,
               value: ''
+            },
+            canvas: {
+              type: Object
             }
           }
         }
@@ -93,7 +96,7 @@
           this.selectedNode = event.detail;
           var nodes =  this.shadowRoot.querySelectorAll('sweva-node');
           //problem with the document and shadowRoot, we have to find a fix to this or pass the shadow root element to every function requiring the shadow root
-          //var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
+          var nodes = this.canvas.querySelectorAll('sweva-node');
           for (var i = 0; i < nodes.length; i++) {
             // nodes[i].toggleClass('selected', nodes[i].id == this.selectedNode.id);
             if (nodes[i].id == this.selectedNode.id) {
@@ -456,13 +459,13 @@
                   var code = sweva.ComposableLoader.convertJsonToCode(response.data);
                   node.init(self.jsPlumbInstance, self.yjs, self.edges, alias, code, fixed, { x: x, y: y });
                   node.addEventListener('created', self.handleNodeCreated);
-                  node.addEventListener('selected', self.handleNodeSelected);
+                  node.addEventListener('selected', self.handleNodeSelected.bind(this));
                   resolve(node);
                 });
             } else {
               node.init(self.jsPlumbInstance, self.yjs, self.edges, options.alias, code, fixed, { x: x, y: y });
               node.addEventListener('created', self.handleNodeCreated);
-              node.addEventListener('selected', self.handleNodeSelected);
+              node.addEventListener('selected', self.handleNodeSelected.bind(this));
               resolve(node);
             }
           };
@@ -479,7 +482,7 @@
           node.init(this.jsPlumbInstance, this.yjs, this.edges, nodeData.alias,
             nodeData.code, nodeData.fixed, { x: nodeData.x, y: nodeData.y }, nodeData.id, true);
           node.addEventListener('created', this.handleNodeCreated);
-          node.addEventListener('selected', this.handleNodeSelected);
+          node.addEventListener('selected', this.handleNodeSelected.bind(this));
           return node;
         }
 
@@ -827,6 +830,9 @@
               visualization: {
                 type: String,
                 value: ''
+              },
+              canvas: {
+                type: Object
               }
             },
 
@@ -1351,7 +1357,7 @@
                   node
                     .addEventListener('created', self.handleNodeCreated);
                     node.addEventListener('selected',
-                      self.handleNodeSelected)
+                      self.handleNodeSelected.bind(self))
                     ;
                   resolve(node);
                 })
@@ -1361,7 +1367,7 @@
                 ;
                 node.addEventListener('created', self.handleNodeCreated);
                 node.addEventListener(
-                  'selected', self.handleNodeSelected);
+                  'selected', self.handleNodeSelected.bind(self));
                 resolve
 
                 (node);
@@ -1391,7 +1397,7 @@
 
                   .y }, nodeData.id, true);
             node.addEventListener('created', this.handleNodeCreated);
-            node.addEventListener('selected', this.handleNodeSelected);
+            node.addEventListener('selected', this.handleNodeSelected.bind(this));
 
             return node;
           },

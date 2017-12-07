@@ -222,8 +222,9 @@
           this.style.border = '';
         }
 
-        edit(){
-          document.getElementById(this.id+'editor').open('Edit Node ' + this.alias);
+        edit() {
+          this.dispatchEvent(new CustomEvent('edit-node', {detail: {id: this.id, alias: this.alias}, bubbles: true, composed: true}));
+          //document.getElementById(this.id+'editor').open('Edit Node ' + this.alias);
         }
 
         handleEditComplete(){}

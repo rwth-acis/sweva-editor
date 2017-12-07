@@ -96,7 +96,8 @@ Example:
             canvas-offset-x="{{canvasOffset.x}}"
             canvas-offset-y="{{canvasOffset.y}}"
             on-canvasmousemove="handleCanvasMouseMove"
-            on-viewportchanged="handleViewPortChanced">
+            on-viewportchanged="handleViewPortChanced"
+            canvas="{{canvas}}">
 
       <sweva-cursor-awareness id="cursor-awareness"></sweva-cursor-awareness>
       <sweva-node-manager canvas-offset="{{canvasOffset}}"
@@ -109,7 +110,9 @@ Example:
                 on-clonenode="handleCloneNode"
                 on-deletenode="handleDeleteNode"
                 on-repositorybrowse="handleRepositoryBrowse"
-                on-updatevisualization = "handleUpdateVisualization">
+                on-updatevisualization = "handleUpdateVisualization"
+                on-edit-node="_handleEditNode"
+                canvas="{{canvas}}">
       </sweva-node-manager>
     </sweva-canvas>
 
@@ -219,7 +222,7 @@ Example:
             },
             yjsServer: {
               type: String,
-              value: 'http://localhost:1234'
+              value: 'http://127.0.0.1:1234'
             },
             project: {
               type: Object,
@@ -252,6 +255,9 @@ Example:
             loaded: {
               type: Boolean,
               value: false
+            },
+            canvas: {
+              type: String
             }
           }
         }
@@ -473,6 +479,14 @@ Example:
               }
             }
           }
+        }
+
+        _handleEditNode(e) {
+          let nodeId = e.detail.id;
+          let alias = e.detail.alias;
+          this.shadowRoot.getElementById(nodeId + 'editor').open('Edit Node ' + alias);
+          //document.getElementById(this.id+'editor').open('Edit Node ' + this.alias);
+          //console.log('hey');
         }
 
         handleEditNode(event) {
