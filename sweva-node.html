@@ -180,9 +180,13 @@
         }
       }
 
+      /**
+       * Aarray of observers.
+       *
+       * @returns {string[]}
+       */
       static get observers() {
         return [
-          /* observer array just like 1.x */
           'updatePos(posX, posY)',
           'updateCode(code)',
           'updateAlias(alias)'
@@ -198,13 +202,17 @@
 
       ready() {
         super.ready();
-        this.addEventListener("mousedown", this._handleMousedown.bind(this), false);
-        this.addEventListener("dblclick", this._handleDoubleclick.bind(this), false);
-        //this.addEventListener("click", this._handleClick.bind(this), false);
-        this.addEventListener("contextmenu", this._handleContextmenu.bind(this), false);
-        this.addEventListener("mouseenter", this._handleEnter.bind(this), false);
 
-        //attached funcfion code
+        this._prepareStyles();
+
+        this.addEventListener("mousedown", this._handleMousedown);
+        this.addEventListener("dblclick", this._handleDoubleclick);
+        //this.addEventListener("click", this._handleClick.bind(this), false);
+        this.addEventListener("contextmenu", this._handleContextmenu);
+        this.addEventListener("mouseenter", this._handleEnter);
+      }
+
+      attached() {
         Polymer.RenderStatus.beforeNextRender(this, function() {
           this.shadowRoot.querySelector('.alias').addEventListener("blur", this._handleAliasChanged.bind(this), false);
         });
@@ -225,7 +233,7 @@
         //document.getElementById(this.id+'editor').open('Edit Node ' + this.alias);
       }
 
-      handleEditComplete(){}
+      handleEditComplete() {}
 
       addConnection(sourceEndpointId, targetId, targetEndpointId, fromYjs) {
         //this.connectedTo[sourceEndpointId] = { target: targetId, endpoint: targetEndpointId };
@@ -510,7 +518,7 @@
         this.edges = edges;
         var position = position || { x: 0, y: 0 };
         this.alias = alias || '';
-        if (this.alias.trim().length == 0) {
+        if (this.alias.trim().length === 0) {
           this.alias = 'Node' + (Math.floor(Math.random() * 300) + '');
         }
         this.id = id || this._generateGUID();
