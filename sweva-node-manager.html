@@ -12,12 +12,9 @@
       :host {
         display: block;
       }
-      
     </style>
 
     <div id="node-canvas">
-      <content>
-      </content>
     </div>
 
     <sweva-input-mapper id="input-mapper"></sweva-input-mapper>
@@ -94,9 +91,7 @@
         handleNodeSelected(event) {
 
           this.selectedNode = event.detail;
-          var nodes =  this.shadowRoot.querySelectorAll('sweva-node');
-          //problem with the document and shadowRoot, we have to find a fix to this or pass the shadow root element to every function requiring the shadow root
-          var nodes = this.canvas.querySelectorAll('sweva-node');
+          var nodes = this.shadowRoot.querySelectorAll('sweva-node');
           for (var i = 0; i < nodes.length; i++) {
             // nodes[i].toggleClass('selected', nodes[i].id == this.selectedNode.id);
             if (nodes[i].id == this.selectedNode.id) {
@@ -110,7 +105,7 @@
         }
 
         selectNodeBy(nodeId, userId, color) {
-          var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
+          var nodes = this.canvas.querySelectorAll('sweva-node');
           for (var i = 0; i < nodes.length; i++) {
             if (nodes[i].id == nodeId) {
               nodes[i].selectBy(userId, color);
@@ -208,9 +203,7 @@
            }*/
           composition.controls = {};
           composition.visualization = '';
-          var container = this
-            .shadowRoot.querySelector(
-              '#input-mapper');
+          var container = this.shadowRoot.querySelector('#input-mapper');
           if (container) {
             var sections = container.getInformation();
             composition.visualization = this.visualization;
@@ -233,14 +226,13 @@
         }
 
         getGraphData() {
-          var nodes = [].slice.call(document.getElementById('canvas').querySelectorAll('sweva-node'));
+          var nodes = [].slice.call(this.canvas.querySelectorAll('sweva-node'));
           for (
             var i = 0; i < nodes.length; i++) {
             var node = nodes[i];
             node.graphNodeType = 'node';
           }
-          var inputNodes = [].slice.call(
-            document.getElementById('canvas').querySelectorAll('sweva-input-container'));
+          var inputNodes = [].slice.call(this.canvas.querySelectorAll('sweva-input-container'));
           for (var i = 0; i < inputNodes.length; i++) {
             var node = inputNodes[i];
             node.graphNodeType = 'input';
@@ -317,7 +309,7 @@
         }
 
         clear(){
-          var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
+          var nodes = this.canvas.querySelectorAll('sweva-node');
           for (var i = 0; i < nodes.length; i++) {
             nodes[i].remove();
           }
@@ -434,9 +426,9 @@
         }
 
         createNode(options) {
-          var self = this;
           var node = document.createElement('sweva-node');
-          this.shadowRoot.appendChild(node);
+          var self = this;
+          this.shadowRoot.getElementById('node-canvas').appendChild(node);
           var func = function (resolve, reject) {
             var self = this;
             var center = {};
@@ -458,13 +450,13 @@
                 function (response) {
                   var code = sweva.ComposableLoader.convertJsonToCode(response.data);
                   node.init(self.jsPlumbInstance, self.yjs, self.edges, alias, code, fixed, { x: x, y: y });
-                  node.addEventListener('created', self.handleNodeCreated);
+                  node.addEventListener('created', self.handleNodeCreated.bind(this));
                   node.addEventListener('selected', self.handleNodeSelected.bind(this));
                   resolve(node);
                 });
             } else {
               node.init(self.jsPlumbInstance, self.yjs, self.edges, options.alias, code, fixed, { x: x, y: y });
-              node.addEventListener('created', self.handleNodeCreated);
+              node.addEventListener('created', self.handleNodeCreated.bind(this));
               node.addEventListener('selected', self.handleNodeSelected.bind(this));
               resolve(node);
             }
@@ -477,11 +469,11 @@
 
         yjsCreateNode(nodeData) {
           var node = document.createElement('sweva-node');
-          this.shadowRoot.appendChild(node);
+          this.shadowRoot.getElementById('node-canvas').appendChild(node);
 //          Polymer.dom(this).appendChild(node);
           node.init(this.jsPlumbInstance, this.yjs, this.edges, nodeData.alias,
             nodeData.code, nodeData.fixed, { x: nodeData.x, y: nodeData.y }, nodeData.id, true);
-          node.addEventListener('created', this.handleNodeCreated);
+          node.addEventListener('created', this.handleNodeCreated.bind(this));
           node.addEventListener('selected', this.handleNodeSelected.bind(this));
           return node;
         }
@@ -501,7 +493,7 @@
                 Container: "canvas"
               });
               self.jsPlumbInstance = instance;
-              instance.Defaults.Container = document.getElementById('canvas');
+              instance.Defaults.Container = self.shadowRoot.getElementById('canvas');
               self.dispatchEvent(new CustomEvent('jsplumbloaded', { bubbles: true, composed: true , detail: instance}));
               var init = function (connection) {
                 //  connection.getOverlay("label").setLabel(connection.sourceId.substring(15) + "-" + connection.targetId.substring(15));
@@ -543,7 +535,7 @@
                     if (connection.sourceId === connection.targetId) {
                       return false;
                     }
-                    var source = document.getElementById(connection.sourceId);
+                    var source = self.shadowRoot.getElementById(connection.sourceId);
 
                     if (source && source.tagName == 'SWEVA-INPUT-CONTAINER' && !connection.dropEndpoint.isInput) {
                       return false;
@@ -555,7 +547,7 @@
                       && info.originalTargetEndpoint.getUuid() == info.newTargetEndpoint.getUuid()) {
                       return;
                     }
-                    var node = document.getElementById(info.originalSourceId);
+                    var node = self.shadowRoot.getElementById(info.originalSourceId);
                     if (node) {
                       //console.log('moved', info.originalSourceEndpoint.getUuid(), info.originalTargetEndpoint.getUuid());
                       self.yjs.share.edges.delete(info.originalSourceEndpoint.getUuid() + info
@@ -625,7 +617,7 @@
                     }
                     else {
                       if (self.lastDraggedConnection) {
-                        var node = document.getElementById(self.lastDraggedConnection.sourceId);
+                        var node = self.shadowRoot.getElementById(self.lastDraggedConnection.sourceId);
                         if (node) {
                           node.removeConnection(self.lastDraggedConnection.sourceEndpoint, self.lastDraggedConnection.targetEndpoint);
                         }
@@ -659,15 +651,15 @@
                     var fixed = map.get('fixed') ? true : false;
                     //var code = codeObj.toString();
                     //console.log(code);
-                    var node = self.shadowRoot.querySelector(event.name);
+                    var node = self.shadowRoot.getElementById(event.name);
                     if (!node) {
                       node = self.yjsCreateNode({ id: event.name, alias: alias, code: code, fixed: fixed, x: position.x, y: position.y });
                     }
-                    var nodes = self.querySelectorAll('sweva-node');
+                    var nodes = self.shadowRoot.querySelectorAll('sweva-node');
                     for (var k = 0; k < nodes.length; k++) {
                       nodes[k].updateConnections();
                     }
-                    nodes = self.querySelectorAll('sweva-input-container');
+                    nodes = self.shadowRoot.querySelectorAll('sweva-input-container');
                     for (var k = 0; k < nodes.length; k++) {
                       nodes[k].updateConnections();
                     }
@@ -679,7 +671,7 @@
                       var fixed = map.get('fixed');
                       if (position != null && code != null && alias != null) {
                         //prevent randomly inserting nodes at 0 0
-                        var node = document.getElementById(event.name);
+                        var node = self.shadowRoot.getElementById(event.name);
                         if (!node) {
                           return;
                         }
@@ -709,7 +701,7 @@
                     console.log('not found');
                   }
                 } else if (event.type === 'delete') {
-                  var node = document.getElementById(event.name);
+                  var node = self.shadowRoot.getElementById(event.name);
                   if (node) {
                     node.remove(true);
                     self.jsPlumbInstance.repaintEverything();
@@ -728,7 +720,7 @@
                   var targetEndpoint = map.get('targetEndpoint') || '';
                   if (source && target && sourceEndpoint && targetEndpoint) {
                     self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
-                    var node = document.getElementById(source);
+                    var node = self.canvas.getElementById(source);
                     if (node) {
                       node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                     }
@@ -741,7 +733,7 @@
                     var targetEndpoint = map.get('targetEndpoint') || '';
                     if (source && target && sourceEndpoint && targetEndpoint) {
                       self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
-                      var node = document.getElementById(source);
+                      var node = self.getElementById(source);
                       if (node) {
                         node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                       }
@@ -752,7 +744,7 @@
                 var edge = self.edges[event.name];
                 //console.log('delete', edge);
                 if (edge) {
-                  var node = document.getElementById(edge.source);
+                  var node = self.canvas.getElementById(edge.source);
                   if (node) {
                     node.removeConnection(edge.sourceEndpoint, edge.targetEndpoint, true);
                     if (node.repaint) {
@@ -772,7 +764,7 @@
           this.edges = [];
           this.yjs = null;
           this.selectedNode = null;
-          var nodes = document.getElementById('canvas').querySelectorAll('sweva-node');
+          var nodes = this.canvas.querySelectorAll('sweva-node');
           for (var i = 0; i < nodes.length; i++) {
             this.jsPlumbInstance.remove(nodes[i]);
           }

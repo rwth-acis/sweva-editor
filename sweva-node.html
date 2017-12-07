@@ -351,7 +351,7 @@
 
         remove(fromYjs) {
           this.clearConnections();
-          this.jsPlumbInstance.remove(this.id);
+          this.jsPlumbInstance.remove(this);
           if (typeof fromYjs === 'undefined' || fromYjs == false) {
             this.yjs.share.nodes.delete(this.id);
           }
