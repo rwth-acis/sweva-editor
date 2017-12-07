@@ -729,7 +729,7 @@
                   var targetEndpoint = map.get('targetEndpoint') || '';
                   if (source && target && sourceEndpoint && targetEndpoint) {
                     self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
-                    var node = self.getElementById(source);
+                    var node = self.shadowRoot.getElementById(source);
                     if (node) {
                       node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                     }
