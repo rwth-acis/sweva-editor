@@ -50,12 +50,12 @@
     "paper-card": "PolymerElements/paper-card#^2.0.0",
     "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",
     "sweva-core": "rwth-acis/sweva-core",
-    "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0"
+    "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
+    "neon-animation": "PolymerElements/neon-animation#^2.0.2"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
-
   },
   "resolutions": {
     "graphlib": "^2.0.0",
