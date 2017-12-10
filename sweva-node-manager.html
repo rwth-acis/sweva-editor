@@ -716,7 +716,7 @@
                 var targetEndpoint = map.get('targetEndpoint') || '';
                 if (source && target && sourceEndpoint && targetEndpoint) {
                   self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
-                  var node = self.canvas.getElementById(source);
+                  var node = self.shadowRoot.getElementById(source);
                   if (node) {
                     node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                   }
@@ -740,7 +740,7 @@
               var edge = self.edges[event.name];
               //console.log('delete', edge);
               if (edge) {
-                var node = self.canvas.getElementById(edge.source);
+                var node = self.shadowRoot.getElementById(edge.source);
                 if (node) {
                   node.removeConnection(edge.sourceEndpoint, edge.targetEndpoint, true);
                   if (node.repaint) {
@@ -760,7 +760,7 @@
         this.edges = [];
         this.yjs = null;
         this.selectedNode = null;
-        var nodes = this.canvas.querySelectorAll('sweva-node');
+        var nodes = this.shadowRoot.querySelectorAll('sweva-node');
         for (var i = 0; i < nodes.length; i++) {
           this.jsPlumbInstance.remove(nodes[i]);
         }
