@@ -508,7 +508,7 @@ Example:
       handleCloneNode(event) {
         var node = event.detail;
         if (node) {
-          var nodeManager = this.querySelector('sweva-node-manager');
+          var nodeManager = this.shadowRoot.querySelector('sweva-node-manager');
           if (nodeManager) {
             nodeManager.cloneNode(node);
           }
