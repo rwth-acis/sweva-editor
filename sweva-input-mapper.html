@@ -14,7 +14,7 @@
         </style>
       
         <div id="input-canvas">
-            <slot></slot>
+
         </div>
     </template>
     <script>
@@ -51,7 +51,7 @@
             var inputContainer = document.createElement('sweva-input-container');
             if (typeof options === 'object' && typeof options.index === 'number')
             {} else {
-              var children = Polymer.dom(this).children;
+              var children = this.shadowRoot.children;
               var maxIndex = 0;
               for (var i = 0; i < children.length; i++) {
                 var element = children[i];
@@ -61,8 +61,8 @@
               }
               inputContainer.indexPos = maxIndex + 1;
             }
-            Polymer.dom(this).appendChild(inputContainer);
-            Polymer.dom.flush();
+            this.shadowRoot.getElementById('input-canvas').appendChild(inputContainer)
+//            Polymer.dom.flush();
             if (typeof options === 'object') {
               inputContainer.init(this.jsPlumbInstance, this.yjs, this.edges, options.id, fromYjs);
               inputContainer.update(options);
@@ -361,8 +361,8 @@
               var currentSection = 0;
               var firstHeaderSeen = false;
 
-              var children = Polymer.dom(this).children;
-
+             // var children = Polymer.dom(this).children;
+              var children = this.shadowRoot.children;
               children.sort(function (a, b) {
                 return a.indexPos > b.indexPos;
               });

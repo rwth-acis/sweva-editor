@@ -90,21 +90,20 @@
         <div class="index">Index: {{indexPos}}</div>
 
         <div id="content">
-            <div class="material-select">
-                <select id="type">
-                    <option value="" disabled selected>Select Type</option>
-                    <option value="header">Section Header</option>
-                    <option value="text">Text</option>
-                    <option value="multiline">Multi-Line Text</option>
-                    <option value="number">Number</option>
-                    <option value="slider">Slider</option>
-                    <option value="toggle">Toggle</option>
-                    <option value="dropdown">Dropdown</option>
-                    <option value="fixed">Fixed Value</option>
-                </select>
-            </div>
+            <paper-dropdown-menu label="Select Type" no-label-float="true" on-iron-select="handleTypeChanged">
+                <paper-listbox slot="dropdown-content" id="type">
+                    <paper-item value="header">Section Header</paper-item>
+                    <paper-item value="text">Text</paper-item>
+                    <paper-item value="multiline">Multi-Line Text</paper-item>
+                    <paper-item value="number">Number</paper-item>
+                    <paper-item value="slider">Slider</paper-item>
+                    <paper-item value="toggle">Toggle</paper-item>
+                    <paper-item value="dropdown">Dropdown</paper-item>
+                    <paper-item value="fixed">Fixed Value</paper-item>
+                </paper-listbox>
+            </paper-dropdown-menu>
 
-            <paper-input id="indexPos" type="number" label="Index" value="[[indexPos]]" on-input="handleIndexChanged" data-parent="this"></paper-input>
+            <paper-input id="indexPos" type="number" label="Index" value="[[indexPos]]" on-input="handleIndexChanged.bind(this)" data-parent="this"></paper-input>
 
             <paper-input hidden$="{{!showElement('label',type)}}" id="label" label="Label" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
             <paper-input hidden$="{{!showElement('stringvalue',type)}}" id="stringvalue" label="Value" value="" on-input="handleInputChanged" data-parent="this"></paper-input>
@@ -193,8 +192,8 @@
               // RenderStatus replaces the attached function in Polymer 2.0
               Polymer.RenderStatus.beforeNextRender(this, function () {
                 this.$.content.addEventListener('mousewheel', function (event) { event.stopPropagation(); }, false);
-                this.shadowRoot.querySelector('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
-                this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
+//                this.shadowRoot.querySelector('paper-item').addEventListener('change', this.handleTypeChanged.bind(this), false);
+                  this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
               });
             }
 
@@ -258,7 +257,7 @@
 
             remove(fromYjs) {
               this.clearConnections();
-              this.jsPlumbInstance.remove(this.id);
+              this.jsPlumbInstance.remove(this);
               if (typeof fromYjs === 'undefined' || fromYjs == false) {
                 this.yjs.share.mapperContainers.delete(this.id);
               }
@@ -479,7 +478,7 @@
             }
 
             updateType(element, fromYjs) {
-              this.type = element.value;
+              this.type = element.selectedItem.getAttribute('value');
               this.style.backgroundColor = '';
               switch (this.type) {
                 case 'header':

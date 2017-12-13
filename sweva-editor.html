@@ -324,7 +324,7 @@ Example:
 
       handleNodeCreated(event) {
         var node = event.detail;
-        if (!document.getElementById(node.id + 'editor')) {
+        if (!this.shadowRoot.getElementById(node.id + 'editor')) {
           var editor = document.createElement('sweva-node-editor');
           editor.id = node.id + 'editor';
           Polymer.dom(this.$.editors).appendChild(editor);
@@ -478,7 +478,7 @@ Example:
            this.yjs.share.project.set('data', code);
            }*/
           else {
-            var node = document.getElementById(id);
+            var node = this.shadowRoot.getElementById(id);
             if (node) {
               node.updateCode(code);
             }
@@ -491,7 +491,6 @@ Example:
         let alias = e.detail.alias;
         this.shadowRoot.getElementById(nodeId + 'editor').open('Edit Node ' + alias);
         //document.getElementById(this.id+'editor').open('Edit Node ' + this.alias);
-        //console.log('hey');
       }
 
       handleEditNode(event) {
