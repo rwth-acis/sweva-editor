@@ -153,7 +153,7 @@
             }];
             var currentSection = 0;
             var firstHeaderSeen = false;
-            var children = Polymer.dom(this).children;
+            var children = [].slice.call(this.$["input-canvas"].querySelectorAll('sweva-input-container'));
             children.sort(function (a, b) {
               return a.indexPos > b.indexPos;
             });

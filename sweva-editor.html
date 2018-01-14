@@ -461,6 +461,7 @@ Example:
           code = sweva.ComposableLoader.getDefaultComposition();
         }
         var obj = nodeManager.getComposition(code);
+        console.log(obj); // for testing purposes will remove after visualisation part is ready.
         this.dispatchEvent(new CustomEvent('modelupdated', { bubbles: true, composed: true , detail: obj }));
       }
 
