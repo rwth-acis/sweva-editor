@@ -54,8 +54,6 @@
        
     </template>
     <script>
-        if(Polymer.Element){
-            //version 2 code
             class SwevaCanvasControls extends Polymer.Element {
                 static get is() {
                     return 'sweva-canvas-controls';
@@ -106,49 +104,5 @@
 
             // Register custom element definition using standard platform API
             customElements.define(SwevaCanvasControls.is, SwevaCanvasControls);
-        } else {
-            (function () {
-                'use strict';
-
-                Polymer({
-                    is: 'sweva-canvas-controls',
-                    properties: {
-                        zoomValue: {
-                            type: Number,
-                            value: 1
-                        },
-                        maxZoom: {
-                            type: Number,
-                            value: 1
-                        },
-                        minZoom: {
-                            type: Number,
-                            value: 0.2
-                        }
-                    },
-                    ready: function () {
-
-                    },
-                    handleCenterClick: function (event) {
-                        this.fire('centerclick', {});
-                    },
-                    handleZoomInClick: function (event) {
-                        this.fire('zoomclick', { delta: 1 });
-                    },
-                    handleZoomOutClick: function (event) {
-                        this.fire('zoomclick', { delta: -1 });
-                    },
-                    handleZoomSlider: function (event) {
-                        var value = this.$$('#zoom-slider').value;
-                        this.fire('zoomslide', { value: value });
-                    },
-                    adjustZoomSlider: function (zoom) {
-                        if (this.zoomValue != zoom) {
-                            this.zoomValue = zoom;
-                        }
-                    }
-                });
-            })();
-        }
     </script>
 </dom-module>
