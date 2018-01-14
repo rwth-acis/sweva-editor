@@ -205,20 +205,21 @@
               var self = this;
               if (typeof fromYjs === 'undefined' || fromYjs == false) {
 
-                var map = self.yjs.share.mapperContainers.set(self.id, Y.Map);
+                var map = self.yjs.share.mapperContainers.set(self.id, Y.Map) //.then(function (map) {
+                  map.set('index', self.indexPos);
+                  map.set('type', self.shadowRoot.querySelector('#type').value || '');
+                  map.set('label', self.shadowRoot.querySelector('#label').value || '');
+                  map.set('stringvalue', self.shadowRoot.querySelector('#stringvalue').value || '');
+                  map.set('multilinevalue', self.shadowRoot.querySelector('#multilinevalue').value || '');
+                  map.set('numbervalue', self.shadowRoot.querySelector('#numbervalue').value || '');
+                  map.set('booleanvalue', self.shadowRoot.querySelector('#booleanvalue').checked || '');
+                  map.set('min', self.shadowRoot.querySelector('#min').value || '');
+                  map.set('max', self.shadowRoot.querySelector('#max').value || '');
+                  map.set('items', self.shadowRoot.querySelector('#items').value || '');
+                  map.set('description', self.shadowRoot.querySelector('#description').value || '');
+                  map.set('position', { x: self.posX, y: self.posY });
+                //});
 
-                map.set('index', self.indexPos);
-                map.set('type', self.shadowRoot.querySelector('#type').value || '');
-                map.set('label', self.shadowRoot.querySelector('#label').value || '');
-                map.set('stringvalue', self.shadowRoot.querySelector('#stringvalue').value || '');
-                map.set('multilinevalue', self.shadowRoot.querySelector('#multilinevalue').value || '');
-                map.set('numbervalue', self.shadowRoot.querySelector('#numbervalue').value || '');
-                map.set('booleanvalue', self.shadowRoot.querySelector('#booleanvalue').checked || '');
-                map.set('min', self.shadowRoot.querySelector('#min').value || '');
-                map.set('max', self.shadowRoot.querySelector('#max').value || '');
-                map.set('items', self.shadowRoot.querySelector('#items').value || '');
-                map.set('description', self.shadowRoot.querySelector('#description').value || '');
-                map.set('position', { x: self.posX, y: self.posY });
               }
 
               this.jsPlumbInstance.draggable(this, {

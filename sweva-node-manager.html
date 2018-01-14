@@ -222,13 +222,13 @@
       }
 
       getGraphData() {
-        var nodes = [].slice.call(this.canvas.querySelectorAll('sweva-node'));
+        var nodes = [].slice.call(this.canvas.querySelector("#node-manager").$["node-canvas"].querySelectorAll("sweva-node"));
         for (
           var i = 0; i < nodes.length; i++) {
           var node = nodes[i];
           node.graphNodeType = 'node';
         }
-        var inputNodes = [].slice.call(this.canvas.querySelectorAll('sweva-input-container'));
+        var inputNodes = [].slice.call(this.canvas.querySelector("#node-manager").$["input-mapper"].$["input-canvas"].querySelectorAll('sweva-input-container'));
         for (var i = 0; i < inputNodes.length; i++) {
           var node = inputNodes[i];
           node.graphNodeType = 'input';

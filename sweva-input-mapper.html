@@ -46,10 +46,10 @@
           }
 
           add(options, fromYjs) {
-            var inputContainer = document.createElement('sweva-input-container');
+            var inputContainer = new SwevaInputContainer();
             if (typeof options === 'object' && typeof options.index === 'number')
             {} else {
-              var children = this.shadowRoot.children;
+              var children = [].slice.call(this.$["input-canvas"].querySelectorAll('sweva-input-container'));
               var maxIndex = 0;
               for (var i = 0; i < children.length; i++) {
                 var element = children[i];
@@ -59,8 +59,8 @@
               }
               inputContainer.indexPos = maxIndex + 1;
             }
-            this.shadowRoot.getElementById('input-canvas').appendChild(inputContainer)
-//            Polymer.dom.flush();
+            this.shadowRoot.getElementById('input-canvas').appendChild(inputContainer);
+            Polymer.dom.flush();
             if (typeof options === 'object') {
               inputContainer.init(this.jsPlumbInstance, this.yjs, this.edges, options.id, fromYjs);
               inputContainer.update(options);
@@ -137,7 +137,7 @@
                   }
                   catch (e) {}
                 } else if (event.type === 'delete') {
-                  var node = document.getElementById(event.name);
+                  var node = self.shadowRoot.getElementById(event.name)
                   if (node) {
                     node.remove(true);
                   }
