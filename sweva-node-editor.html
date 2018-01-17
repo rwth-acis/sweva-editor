@@ -129,8 +129,10 @@
 
           ready() {
             super.ready();
+          }
 
-            //attached funcfion code
+          connectedCallback() {
+            super.connectedCallback();
             Polymer.RenderStatus.beforeNextRender(this, function() {
               var editor = this.$.editor;
               this.editor = ace.edit(editor);
@@ -140,11 +142,11 @@
               this.editor.getSession().setUseWorker(false);
               var self = this;
               this.editor.getSession().on('change', function () {
-                /*self.debounce('editorDebounce', function () {
-                  if (self.isOpen) {
-                    self.findErrors();
-                  }
-                }, 1000); */
+                  /*self.debounce('editorDebounce', function () {
+                   if (self.isOpen) {
+                   self.findErrors();
+                   }
+                   }, 1000); */
                 this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeOut.after(1000),
                   () => {
                     if (self.isOpen) {

@@ -151,9 +151,12 @@
 
           ready() {
             super.ready();
+          }
 
-            // RenderStatus replaces the attached function in Polymer 2.0
-            Polymer.RenderStatus.beforeNextRender(this, function () {
+          // ConnectedCallback replaces the attached function in Polymer 2.0
+          connectedCallback(){
+            super.connectedCallback();
+            Polymer.RenderStatus.afterNextRender(this, function() {
               var dialog = this.shadowRoot.querySelector('paper-dialog.main');
               var self = this;
               if (dialog) {

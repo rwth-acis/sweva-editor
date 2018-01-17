@@ -129,7 +129,62 @@
             super.ready();
           }
 
-          open(title, id, code) {
+          // ConnectedCallback replaces the attached function in Polymer 2.0
+          connectedCallback() {
+              super.connectedCallback();
+              Polymer.RenderStatus.beforeNextRender(this, function() {
+                var container = this.$["editor"];
+                this.editor = ace.edit( container);
+                this.editor.$blockScrolling = Infinity;
+                //editor.session.$worker.call("changeOptions", [{ asi: true }])
+                //editor.setTheme("ace/theme/monokai");
+                this.editor.getSession().setMode("ace/mode/javascript");
+                this.editor.getSession().setUseWorker(false);
+                var self = this;
+                this.editor.getSession().on('change', function () {
+                  this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeOut.after(1000),
+                    () => {
+                      if (self.isOpen) {
+                        self.findErrors();
+                      }
+                    });
+                });
+                var dialog = this.shadowRoot.querySelector('paper-dialog.main');
+                dialog.addEventListener('iron-overlay-closed', function (customEvent) {
+                  self.isOpen = false;
+                    /*
+                   self.yjs.share.nodes.get(self.currentId).then(function (map) {
+                   map.get('sharedCode' + self.currentId).then(function (text) {
+                   console.log('post-open', text.toString())
+                   text.unbindAce();
+                   });
+                   });*/
+              });
+                  /* this.timer = setInterval(function () {
+                 if (self.isOpen) {
+                 self.findErrors();
+                 }
+                 }, 3000);
+                 /*var configs = {
+                 formats: ['bold', 'italic', 'color'],
+                 styles: {
+                 '.ql-editor': {
+                 'font-family': "monospace"
+                 }
+                 },
+                 theme: 'snow'
+                 };
+                 this.editor = new Quill('#editor', configs);
+                 var field = this.querySelector('#editor .ql-editor');
+                 field.spellcheck = false;
+                 field.focus();
+                 field.blur();*/
+                //editor.addModule('toolbar', { container: '#toolbar' });
+                });
+          }
+
+          open(title, id,
+               code) {
               this.title = title;
               this.currentId = id;
               this.editor.$blockScrolling = Infinity;
@@ -234,54 +289,7 @@
               //self.oldNode = node;
           }
 
-          attached() {
-              this.editor = ace.edit("editor");
-              this.editor.$blockScrolling = Infinity;
-              //editor.session.$worker.call("changeOptions", [{ asi: true }])
-              //editor.setTheme("ace/theme/monokai");
-              this.editor.getSession().setMode("ace/mode/javascript");
-              this.editor.getSession().setUseWorker(false);
-              var self = this;
-              this.editor.getSession().on('change', function () {
-                this._debouncer = Polymer.Debouncer.debounce(this._debouncer, Polymer.Async.timeOut.after(1000),
-                  () => {
-                    if (self.isOpen) {
-                      self.findErrors();
-                    }
-                  });
-              });
-              var dialog = this.shadowRoot.querySelector('paper-dialog.main');
-              dialog.addEventListener('iron-overlay-closed', function (customEvent) {
-                self.isOpen = false;
-                  /*
-                   self.yjs.share.nodes.get(self.currentId).then(function (map) {
-                   map.get('sharedCode' + self.currentId).then(function (text) {
-                   console.log('post-open', text.toString())
-                   text.unbindAce();
-                   });
-                   });*/
-              });
-                /* this.timer = setInterval(function () {
-                 if (self.isOpen) {
-                 self.findErrors();
-                 }
-                 }, 3000);
-                 /*var configs = {
-                 formats: ['bold', 'italic', 'color'],
-                 styles: {
-                 '.ql-editor': {
-                 'font-family': "monospace"
-                 }
-                 },
-                 theme: 'snow'
-                 };
-                 this.editor = new Quill('#editor', configs);
-                 var field = this.querySelector('#editor .ql-editor');
-                 field.spellcheck = false;
-                 field.focus();
-                 field.blur();*/
-              //editor.addModule('toolbar', { container: '#toolbar' });
-          }
+
         }
 
         // Register custom element definition using standard platform API

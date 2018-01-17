@@ -143,9 +143,12 @@
         );
 
         this.canvas = this.$.canvas;
+      }
 
-        // RenderStatus replaces the attached function in Polymer 2.0
-        Polymer.RenderStatus.beforeNextRender(this, function () {
+      // ConnectedCallback replaces the attached function in Polymer 2.0
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.RenderStatus.beforeNextRender(this, function() {
           this.date = new Date();
           var canvas = this.shadowRoot.querySelector('#canvas');
           var canvasView = this.shadowRoot.querySelector('#canvas-view');
@@ -159,7 +162,7 @@
           canvas.addEventListener("mouseup", this.handleCanvasMouseUp.bind(this), false);
           //this.updateCanvasDims();
           this.setMatrix([1, 0, 0, 1, this.canvasOffsetX, this.canvasOffsetY]);
-        })
+        });
       }
 
 
