@@ -1,7 +1,7 @@
 ﻿<link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-dialog/paper-dialog.html">
 <link rel="import" href="../paper-button/paper-button.html">
-
+<link rel="import" href="../juicy-ace-editor/juicy-ace-editor.html">
 <style>
     #editor .inserted {
         position: absolute;
@@ -63,7 +63,8 @@
                 <h2>{{title}}</h2>
                 <div class="textarea-container">
                     <!--<textarea spellcheck="false" id="editor" value="test"></textarea>-->
-                    <div id="editor"></div>
+                    <!--<div id="editor"></div>-->
+                    <juicy-ace-editor id="editor" theme="ace/theme/monokai">Type your code here...</juicy-ace-editor>
                 </div>
                 <div class="buttons">
                     <paper-button on-click="handleRestore">Restore</paper-button>
@@ -135,7 +136,7 @@
             super.connectedCallback();
             Polymer.RenderStatus.beforeNextRender(this, function() {
               var editor = this.$.editor;
-              this.editor = ace.edit(editor);
+              this.editor = editor.editor;//ace.edit(editor);
               this.editor.$blockScrolling = Infinity;
               //editor.setTheme("ace/theme/monokai");
               this.editor.getSession().setMode("ace/mode/javascript");
