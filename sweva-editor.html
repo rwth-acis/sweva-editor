@@ -269,7 +269,8 @@ Example:
         this.canvas = this.$['canvas-container'];
       }
 
-      attached() {
+      connectedCallback() {
+        super.connectedCallback();
         Polymer.RenderStatus.beforeNextRender(this, function () {
           this.shadowRoot.querySelector('#visualization-select').fitInto = this;
         });
