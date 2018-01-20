@@ -56,7 +56,8 @@
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0",
+    "sweva-module-repos": "rwth-acis/sweva-module-repos#sweva-update"
   },
   "resolutions": {
     "graphlib": "^2.0.0",
