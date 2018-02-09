@@ -62,7 +62,7 @@
                 <h2>{{title}}</h2>
                 <div class="textarea-container">
                     <!--<textarea spellcheck="false" id="editor" value="test"></textarea>-->
-                    <div id="editor"></div>
+                    <juicy-ace-editor id="editor" theme="ace/theme/abap">Type your code here...</juicy-ace-editor>
                 </div>
                 <div class="buttons">
                     <paper-button dialog-dismiss>Cancel</paper-button>
@@ -133,8 +133,8 @@
           connectedCallback() {
               super.connectedCallback();
               Polymer.RenderStatus.beforeNextRender(this, function() {
-                var container = this.$["editor"];
-                this.editor = ace.edit( container);
+                var editor = this.$.editor;
+                this.editor = editor.editor;
                 this.editor.$blockScrolling = Infinity;
                 //editor.session.$worker.call("changeOptions", [{ asi: true }])
                 //editor.setTheme("ace/theme/monokai");
