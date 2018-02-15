@@ -463,6 +463,12 @@
         });
       }
 
+      /**
+       * Event handler for when a new node is created within the Yjs node map.
+       *
+       * @param nodeData
+       * @returns {HTMLElement}
+       */
       yjsCreateNode(nodeData) {
         var node = document.createElement('sweva-node');
         this.shadowRoot.getElementById('node-canvas').appendChild(node);
@@ -631,35 +637,62 @@
       }
 
 
+      /**
+       * This is called when all the resources have been loaded, and Yjs is ready.
+       *
+       **/
       loaded() {
         var yjs = this.yjs;
         var self = this;
+
+        // load existing nodes
+        for (var i = 0; i < yjs.share.nodes.keys().length; i++) {
+          var nodeId = yjs.share.nodes.keys()[i];
+          var nodeMap = yjs.share.nodes.get(nodeId);
+          var position = nodeMap.get('position') || { x: 0, y: 0 };
+          var alias = nodeMap.get('alias') || 'node';
+          var code = nodeMap.get('code') || '';
+          var fixed = !!nodeMap.get('fixed');
+
+          self.yjsCreateNode({ id: nodeId, alias: alias, code: code, fixed: fixed, x: position.x, y: position.y });
+        }
+
+        // add an observer
         yjs.share.nodes.observe(
           function(event) {
+
             (function (event) {
-              //console.log('event', event.name, event.type);
               if (event.type === 'add' && event.object.opContents.hasOwnProperty(event.name)) {
+
                 try {
                   var map = yjs.share.nodes.get(event.name);
                   var position = map.get('position') || { x: 0, y: 0 };
                   var alias = map.get('alias') || 'node';
                   var code = map.get('code') || '';
                   var fixed = map.get('fixed') ? true : false;
-                  //var code = codeObj.toString();
-                  //console.log(code);
                   var node = self.shadowRoot.getElementById(event.name);
+
+                  // check if we already have the node on the canvas; if yes, this indicates that we have created the node
+                  // ourselves.
                   if (!node) {
                     node = self.yjsCreateNode({ id: event.name, alias: alias, code: code, fixed: fixed, x: position.x, y: position.y });
                   }
+
+                  // update all connections between processing nodes
                   var nodes = self.shadowRoot.querySelectorAll('sweva-node');
                   for (var k = 0; k < nodes.length; k++) {
                     nodes[k].updateConnections();
                   }
+
+                  // update all connections between input nodes
                   nodes = self.shadowRoot.querySelectorAll('sweva-input-container');
                   for (var k = 0; k < nodes.length; k++) {
                     nodes[k].updateConnections();
                   }
+
                   self.jsPlumbInstance.repaintEverything();
+
+                  // observe changes of the node, like position, alias, code, fixed.
                   map.observe(function(event2) {
                     var position = map.get('position');
                     var alias = map.get('alias');
@@ -696,14 +729,18 @@
                 } catch (e) {
                   console.log('not found');
                 }
+
               } else if (event.type === 'delete') {
                 var node = self.shadowRoot.getElementById(event.name);
                 if (node) {
                   node.remove(true);
                   self.jsPlumbInstance.repaintEverything();
                 }
-              } else if (event.type === 'update') {}
+              } else if (event.type === 'update') {
+                // do nothing
+              }
             })(event);
+
           });
         yjs.share.edges.observe(function (event) {
           (function (event) {
