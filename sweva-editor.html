@@ -611,14 +611,13 @@ Example:
             url: self.yjsServer
           },
           share: {
-            //nodes: 'Map',
-            nodes: 'Map',
-            edges: 'Map',
-            users: 'Map',
-            chat: 'Array',
-            project: 'Map',
+            nodes: 'Map', // stores processing nodes
+            edges: 'Map', // stores edges between processing and input nodes and in-between
+            users: 'Map', // stores users
+            chat: 'Array', // stores chat messages
+            project: 'Map', // stores the whole project JSON if loaded manually
             mapper: 'Map',
-            mapperContainers: 'Map',
+            mapperContainers: 'Map', // stores input nodes
             mapperVisualization: 'Map'
           }
         }).then(function (y) {

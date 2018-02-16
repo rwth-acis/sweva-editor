@@ -657,7 +657,7 @@
           self.yjsCreateNode({ id: nodeId, alias: alias, code: code, fixed: fixed, x: position.x, y: position.y });
         }
 
-        // add an observer
+        // add an observer for nodes
         yjs.share.nodes.observe(
           function(event) {
 
@@ -742,6 +742,31 @@
             })(event);
 
           });
+
+        // now initialize the input nodes
+        var container = this.shadowRoot.querySelector('#input-mapper');
+        container.init(this.jsPlumbInstance, this.yjs, this.edges);
+
+        // load existing edges
+        for (var i = 0; i < yjs.share.edges.keys().length; i++) {
+          var edgeId = yjs.share.edges.keys()[i];
+          var edgeMap = yjs.share.edges.get(edgeId);
+
+          var source = edgeMap.get('source') || '';
+          var target = edgeMap.get('target') || '';
+          var sourceEndpoint = edgeMap.get('sourceEndpoint') || '';
+          var targetEndpoint = edgeMap.get('targetEndpoint') || '';
+
+          if (source && target && sourceEndpoint && targetEndpoint) {
+            self.edges[edgeId] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
+            var node = self.shadowRoot.getElementById(source);
+            if (node) {
+              node.addConnection(sourceEndpoint, target, targetEndpoint, true);
+            }
+          }
+        }
+
+        // add an observer for edges
         yjs.share.edges.observe(function (event) {
           (function (event) {
             if (event.type === 'add') {
@@ -758,7 +783,7 @@
                     node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                   }
                 }
-                map.observe(function (event2) {
+                map.observe(function(event2) {
                   //console.log('edges', events2);
                   var source = map.get('source') || '';
                   var target = map.get('target') || '';
@@ -789,10 +814,6 @@
             }
           })(event);
         });
-
-        // now initialize the input nodes
-        var container = this.shadowRoot.querySelector('#input-mapper');
-        container.init(this.jsPlumbInstance, this.yjs, this.edges);
       }
 
       cleanUp() {
