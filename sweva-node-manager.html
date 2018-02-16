@@ -789,6 +789,8 @@
             }
           })(event);
         });
+
+        // now initialize the input nodes
         var container = this.shadowRoot.querySelector('#input-mapper');
         container.init(this.jsPlumbInstance, this.yjs, this.edges);
       }
