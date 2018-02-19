@@ -231,6 +231,10 @@
         return result;
       }
 
+      getInputNode(nodeId) {
+        return this.shadowRoot.getElementById(nodeId);
+      }
+
       clear() {
         var children = Polymer.dom(this).children;
         for (var i = 0; i < children.length; i++) {

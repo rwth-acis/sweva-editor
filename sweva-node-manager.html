@@ -629,6 +629,10 @@ responsible for showing input nodes.
                     if (self.lastDraggedConnection) {
                       //TODO: input nodes can't be found because they are in the sweva-input-mapper shadow DOM.
                       var node = self.shadowRoot.getElementById(self.lastDraggedConnection.sourceId);
+                      // try out if the source node is of type input node
+                      if (!node) {
+                        node = self.shadowRoot.querySelector('#input-mapper').getInputNode(source);
+                      }
                       if (node) {
                         node.removeConnection(self.lastDraggedConnection.sourceEndpoint, self.lastDraggedConnection.targetEndpoint);
                       }
@@ -770,6 +774,10 @@ responsible for showing input nodes.
             self.edges[edgeId] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
             //TODO: input nodes can't be found because they are in the sweva-input-mapper shadow DOM.
             var node = self.shadowRoot.getElementById(source);
+            // try out if the source node is of type input node
+            if (!node) {
+              node = self.shadowRoot.querySelector('#input-mapper').getInputNode(source);
+            }
             if (node) {
               node.addConnection(sourceEndpoint, target, targetEndpoint, true);
             }
