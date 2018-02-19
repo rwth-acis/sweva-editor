@@ -558,6 +558,11 @@ responsible for showing input nodes.
                     return;
                   }
                   var node = self.shadowRoot.getElementById(info.originalSourceId);
+                  // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+                  // out if the source node is of type input node
+                  if (!node) {
+                    node = self.shadowRoot.querySelector('#input-mapper').getInputNode(info.originalSourceId);
+                  }
                   if (node) {
                     //console.log('moved', info.originalSourceEndpoint.getUuid(), info.originalTargetEndpoint.getUuid());
                     self.yjs.share.edges.delete(info.originalSourceEndpoint.getUuid() + info
@@ -627,11 +632,11 @@ responsible for showing input nodes.
                   }
                   else {
                     if (self.lastDraggedConnection) {
-                      //TODO: input nodes can't be found because they are in the sweva-input-mapper shadow DOM.
                       var node = self.shadowRoot.getElementById(self.lastDraggedConnection.sourceId);
-                      // try out if the source node is of type input node
+                      // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+                      // out if the source node is of type input node
                       if (!node) {
-                        node = self.shadowRoot.querySelector('#input-mapper').getInputNode(source);
+                        node = self.shadowRoot.querySelector('#input-mapper').getInputNode(self.lastDraggedConnection.sourceId);
                       }
                       if (node) {
                         node.removeConnection(self.lastDraggedConnection.sourceEndpoint, self.lastDraggedConnection.targetEndpoint);
@@ -745,6 +750,11 @@ responsible for showing input nodes.
 
               } else if (event.type === 'delete') {
                 var node = self.shadowRoot.getElementById(event.name);
+                // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+                // out if the source node is of type input node
+                if (!node) {
+                  node = self.shadowRoot.querySelector('#input-mapper').getInputNode(event.name);
+                }
                 if (node) {
                   node.remove(true);
                   self.jsPlumbInstance.repaintEverything();
@@ -772,9 +782,9 @@ responsible for showing input nodes.
 
           if (source && target && sourceEndpoint && targetEndpoint) {
             self.edges[edgeId] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
-            //TODO: input nodes can't be found because they are in the sweva-input-mapper shadow DOM.
             var node = self.shadowRoot.getElementById(source);
-            // try out if the source node is of type input node
+            // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+            // out if the source node is of type input node
             if (!node) {
               node = self.shadowRoot.querySelector('#input-mapper').getInputNode(source);
             }
@@ -797,6 +807,11 @@ responsible for showing input nodes.
                 if (source && target && sourceEndpoint && targetEndpoint) {
                   self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
                   var node = self.shadowRoot.getElementById(source);
+                  // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+                  // out if the source node is of type input node
+                  if (!node) {
+                    node = self.shadowRoot.querySelector('#input-mapper').getInputNode(source);
+                  }
                   if (node) {
                     node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                   }
@@ -810,6 +825,11 @@ responsible for showing input nodes.
                   if (source && target && sourceEndpoint && targetEndpoint) {
                     self.edges[event.name] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
                     var node = self.shadowRoot.getElementById(source);
+                    // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+                    // out if the source node is of type input node
+                    if (!node) {
+                      node = self.shadowRoot.querySelector('#input-mapper').getInputNode(source);
+                    }
                     if (node) {
                       node.addConnection(sourceEndpoint, target, targetEndpoint, true);
                     }
@@ -821,6 +841,11 @@ responsible for showing input nodes.
               //console.log('delete', edge);
               if (edge) {
                 var node = self.shadowRoot.getElementById(edge.source);
+                // input nodes can't be found because they are in the sweva-input-mapper shadow DOM, therefore try
+                // out if the source node is of type input node
+                if (!node) {
+                  node = self.shadowRoot.querySelector('#input-mapper').getInputNode(edge.source);
+                }
                 if (node) {
                   node.removeConnection(edge.sourceEndpoint, edge.targetEndpoint, true);
                   if (node.repaint) {
