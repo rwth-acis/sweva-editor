@@ -492,6 +492,7 @@ responsible for showing input nodes.
         var self = this;
         jsPlumb.ready(
           function () {
+            // instance is the JSPlumb instance.
             var instance = window.jsp = jsPlumb.getInstance({
               // default drag options
               DragOptions: { cursor: 'pointer', zIndex: 2000 },
@@ -603,7 +604,7 @@ responsible for showing input nodes.
                     }
                   );
                 });
-                instance.bind("connectionDragStop", function (connection) {
+                instance.bind("connectionDragStop", function(connection) {
                   //console.log("connection " + connection.id + " was dragged");
                   if (self.wasMoved) {
                     self.wasMoved = false;
@@ -626,6 +627,7 @@ responsible for showing input nodes.
                   }
                   else {
                     if (self.lastDraggedConnection) {
+                      //TODO: input nodes can't be found because they are in the sweva-input-mapper shadow DOM.
                       var node = self.shadowRoot.getElementById(self.lastDraggedConnection.sourceId);
                       if (node) {
                         node.removeConnection(self.lastDraggedConnection.sourceEndpoint, self.lastDraggedConnection.targetEndpoint);
@@ -766,6 +768,7 @@ responsible for showing input nodes.
 
           if (source && target && sourceEndpoint && targetEndpoint) {
             self.edges[edgeId] = { source: source, target: target, sourceEndpoint: sourceEndpoint, targetEndpoint: targetEndpoint };
+            //TODO: input nodes can't be found because they are in the sweva-input-mapper shadow DOM.
             var node = self.shadowRoot.getElementById(source);
             if (node) {
               node.addConnection(sourceEndpoint, target, targetEndpoint, true);
