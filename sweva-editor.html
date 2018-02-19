@@ -406,7 +406,7 @@ Example:
       }
 
       handleDownloadProject() {
-        var nodeManager = thisshadowRoot.querySelector('sweva-node-manager');
+        var nodeManager = this.shadowRoot.querySelector('sweva-node-manager');
         var code = this.project.code;
         if (code.trim().length == 0) {
           code = sweva.ComposableLoader.getDefaultComposition();
@@ -650,11 +650,12 @@ Example:
           var canvas = self.$['canvas-container'];
           canvas.pan(2, 2);
           console.log('editor loaded');
-          setTimeout(function () {
+          self.loaded = true;
+          /*setTimeout(function () {
             if (Object.keys(yjs.share.nodes.opContents).length == 0) {
               self.loaded = true;
             }
-          }, 3000);
+          }, 3000);*/
         });
       }
     }
