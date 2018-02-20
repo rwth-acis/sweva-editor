@@ -22,7 +22,7 @@
     "y-text": "^9.2.0",
     "y-array": "^10.0.6",
     "y-websockets-client": "^8.0.15",
-    "dagre": "0.7.4",
+    "dagre": "0.8.2",
     "graphlib": "^2.0.0",
     "axios": "0.8.1",
     "download-as-file": "https://github.com/bahmutov/download-as-file.git",
