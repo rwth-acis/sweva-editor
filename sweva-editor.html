@@ -627,16 +627,20 @@ Example:
           self.yjs = y;
           var yjs = y;
 
+          // late join
+          var code = yjs.share.project.get('code') || '';
+          self.project.code = code;
+          var visualization = yjs.share.project.get('visualization') || '';
+          if (self.visualization !== visualization) {
+            self.updateVisualization(visualization);
+          }
+
           yjs.share.project.observe(function (event) {
             self.loaded = true;
             var code = yjs.share.project.get('code') || '';
             // var input = yjs.share.project.get('input') || {};
             // var data = yjs.share.project.get('data') || {};
             self.project.code = code;
-            var visualization = yjs.share.project.get('visualization') || '';
-            if (self.visualization != visualization) {
-              self.updateVisualization(visualization);
-            }
             // self.project.input = input;
             //self.project.data = data;
           });
