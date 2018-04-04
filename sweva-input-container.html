@@ -197,11 +197,10 @@
       }
 
       connectedCallback() {
-        debugger;
         super.connectedCallback();
-          this.$.content.addEventListener('mousewheel', function (event) {event.stopPropagation();}, false);
-          this.shadowRoot.querySelector('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
-          this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
+        this.$.content.addEventListener('mousewheel', function (event) {event.stopPropagation();}, false);
+        this.shadowRoot.querySelector('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
+        this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
       }
 
       init(jsPlumbInstance, yjs, edges, id, fromYjs) {
@@ -250,7 +249,7 @@
         }
       }
 
-      handleContextmenu() {
+      handleContextmenu(event) {
         var current = event.target;
         //get correct position if over children
         while (current.parentNode && current.tagName != 'SWEVA-INPUT-CONTAINER') {
