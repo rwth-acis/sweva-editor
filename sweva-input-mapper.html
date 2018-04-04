@@ -127,6 +127,7 @@
         }
 
         this.yjs.share.mapperContainers.observe(function (event) {
+          debugger;
           (function (event) {
             if (event.type === 'add') {
               try {
@@ -143,7 +144,7 @@
                 var items = map.get('items') || '';
                 var description = map.get('description') || '';
                 var position = map.get('position') || { x: 10, y: 10 };
-                var container = document.getElementById(event.name);
+                var container = self.shadowRoot.getElementById(event.name);
                 if (!container) {
                   container = self.add({
                     id: event.name,
