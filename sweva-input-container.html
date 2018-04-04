@@ -197,14 +197,11 @@
       }
 
       connectedCallback() {
+        debugger;
         super.connectedCallback();
-        Polymer.RenderStatus.beforeNextRender(this, function() {
-          this.$.content.addEventListener('mousewheel', function (event) {
-            event.stopPropagation();
-          }, false);
-//                this.shadowRoot.querySelector('paper-item').addEventListener('change', this.handleTypeChanged.bind(this), false);
+          this.$.content.addEventListener('mousewheel', function (event) {event.stopPropagation();}, false);
+          this.shadowRoot.querySelector('#type').addEventListener('change', this.handleTypeChanged.bind(this), false);
           this.addEventListener("contextmenu", this.handleContextmenu.bind(this), false);
-        });
       }
 
       init(jsPlumbInstance, yjs, edges, id, fromYjs) {
