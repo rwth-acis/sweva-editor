@@ -64,7 +64,7 @@
               maxIndex = element.indexPos;
             }
           }
-          inputContainer.indexPos = maxIndex + 1;
+          inputContainer.indexPos = parseInt(maxIndex) + 1;
         }
         this.shadowRoot.getElementById('input-canvas').appendChild(inputContainer);
         Polymer.dom.flush();
