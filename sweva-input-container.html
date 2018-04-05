@@ -114,7 +114,7 @@
 
       <paper-input hidden$="{{!showElement('label',type)}}" id="label" label="Label" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
       <paper-input hidden$="{{!showElement('stringvalue',type)}}" id="stringvalue" label="Value" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
-      <paper-textarea hidden$="{{!showElement('multilinevalue',type)}}" id="multilinevalue" label="Value" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-textarea>
+      <paper-textarea hidden$="{{!showElement('multilinevalue',type)}}" id="multilinevalue" label="Value" value="" on-value-changed="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-textarea>
       <paper-input hidden$="{{!showElement('numbervalue',type)}}" id="numbervalue" type="number" label="Value" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
       <paper-toggle-button hidden$="{{!showElement('booleanvalue',type)}}" id="booleanvalue" label="Value" data-parent="this"
                            on-iron-change="toggleButtonValueChanged">
@@ -122,9 +122,9 @@
       </paper-toggle-button>
       <paper-input hidden$="{{!showElement('min',type)}}" id="min" type="number" label="Min" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
       <paper-input hidden$="{{!showElement('max',type)}}" id="max" type="number" label="Max" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
-      <paper-textarea hidden$="{{!showElement('items',type)}}" id="items" label="Items , Separated" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-textarea>
+      <paper-textarea hidden$="{{!showElement('items',type)}}" id="items" label="Items , Separated" value="" on-value-changed="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-textarea>
 
-      <paper-textarea hidden$="{{!showElement('description',type)}}" id="description" label="Description" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-textarea>
+      <paper-textarea hidden$="{{!showElement('description',type)}}" id="description" label="Description" value="" on-value-changed="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-textarea>
     </div>
 
   </template>
