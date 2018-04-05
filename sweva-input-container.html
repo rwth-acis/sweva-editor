@@ -485,7 +485,11 @@
       }
 
       updateType(element, fromYjs) {
-        this.type = element.selected;
+        if(fromYjs){
+          this.type = element.value;
+        } else {
+          this.type = element.selected;
+        }
         this.style.backgroundColor = '';
         switch (this.type) {
           case 'header':
@@ -724,8 +728,8 @@
                 this.updatePos( options[key].x , options[key].y, fromYjs);
               } else {
                 var element = this.shadowRoot.querySelector('#' + key);
-                if (element && element.selected !== options[key]) {
-                  element.selected = options[key];
+                if (element && element.value !== options[key]) {
+                  element.value = options[key];
                   if (element.id === 'type') {
                     this.updateType(element, true);
                   }
