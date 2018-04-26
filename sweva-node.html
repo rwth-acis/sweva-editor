@@ -216,8 +216,9 @@
         this.addEventListener("mouseenter", this._handleEnter);
       }
 
-      attached() {
-        Polymer.RenderStatus.beforeNextRender(this, function() {
+      connectedCallback() {
+        super.connectedCallback();
+        Polymer.RenderStatus.beforeNextRender(this, function () {
           this.shadowRoot.querySelector('.alias').addEventListener("blur", this._handleAliasChanged.bind(this), false);
         });
       }
