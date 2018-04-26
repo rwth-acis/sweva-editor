@@ -453,8 +453,8 @@ responsible for showing input nodes.
               function (response) {
                 var code = sweva.ComposableLoader.convertJsonToCode(response.data);
                 node.init(self.jsPlumbInstance, self.yjs, self.edges, alias, code, fixed, { x: x, y: y });
-                node.addEventListener('created', self.handleNodeCreated.bind(this));
-                node.addEventListener('selected', self.handleNodeSelected.bind(this));
+                node.addEventListener('created', self.handleNodeCreated.bind(self));
+                node.addEventListener('selected', self.handleNodeSelected.bind(self));
                 resolve(node);
               });
           } else {
