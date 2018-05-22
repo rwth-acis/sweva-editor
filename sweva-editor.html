@@ -82,6 +82,20 @@ Example:
         width: 100%;
       }
 
+      /* After Polymer 2.0 Update, this style fixes the Material Design Look of paper-button*/
+      .buttons paper-button  {
+        background-color: var(--paper-indigo-500);
+        color: white;
+        --paper-button-raised-keyboard-focus: {
+          background-color: var(--paper-pink-a200) !important;
+          color: white !important;
+        };
+      }
+
+      .buttons paper-button:hover {
+        background-color: var(--paper-indigo-100);
+      }
+
       paper-spinner {
         position: absolute;
         left: 50%;
@@ -209,7 +223,7 @@ Example:
           </paper-input>
           <paper-icon-button title="Browse Visualizations"icon="icons:timeline" on-click="handleOpenVisualizationRepository"></paper-icon-button>
         </div>
-        <div class="buttons">
+        <div class="buttons" style="margin-left: auto">
           <paper-button dialog-dismiss>Cancel</paper-button>
           <paper-button dialog-confirm on-click="handleAcceptVisualization">Accept</paper-button>
         </div>

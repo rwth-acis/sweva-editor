@@ -43,6 +43,20 @@
                
             }
 
+            /* After Polymer 2.0 Update, this style fixes the Material Design Look of paper-button*/
+            .buttons paper-button  {
+                background-color: var(--paper-indigo-500);
+                color: white;
+                --paper-button-raised-keyboard-focus: {
+                    background-color: var(--paper-pink-a200) !important;
+                    color: white !important;
+                };
+            }
+
+            .buttons paper-button:hover {
+                background-color: var(--paper-indigo-100);
+            }
+
             .textarea-container {
                 flex: 1 1 0;
                 position: relative;
@@ -65,7 +79,7 @@
                     <!--<textarea spellcheck="false" id="editor" value="test"></textarea>-->
                     <juicy-ace-editor id="editor">Type your code here...</juicy-ace-editor>
                 </div>
-                <div class="buttons">
+                <div class="buttons" style="margin-left: auto">
                     <paper-button on-click="handleRestore">Restore</paper-button>
                     <paper-button dialog-dismiss>Cancel</paper-button>
                     <paper-button on-click="handleAccept">Accept</paper-button>
