@@ -58,10 +58,6 @@
   
   <script>
     var MOUSE_WHEEL_SLOWDOWN = 1000;
-    var is_firefox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
-    if (is_firefox) {
-      MOUSE_WHEEL_SLOWDOWN = 50;
-    }
 
     class SwevaCanvas extends Polymer.Element {
 
