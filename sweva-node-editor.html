@@ -75,6 +75,19 @@
         <paper-dialog class="main">
             <div class="dialog-container">
                 <h2>{{title}}</h2>
+
+                <paper-dropdown-menu label="Select Programming Language" no-label-float="true" on-iron-select="handleTypeChanged" selected="typescript">
+                    <paper-listbox slot="dropdown-content" id="language" attr-for-selected="value">
+                        <paper-item value="typescript">TypeScript (AssemblyScript)</paper-item>
+                    </paper-listbox>
+                </paper-dropdown-menu>
+
+                <paper-input id="node-name" label="Name - remove in favour of inline editable name?" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
+
+                <paper-input id="node-description" label="Description" value="" on-change="handleInputChanged" data-parent="this" onclick="this.focus()"></paper-input>
+
+                <p>Code Editor - The first exported function will be called with parameters as inputs and returned data as outputs:</p>
+
                 <div class="textarea-container">
                     <!--<textarea spellcheck="false" id="editor" value="test"></textarea>-->
                     <juicy-ace-editor id="editor">Type your code here...</juicy-ace-editor>

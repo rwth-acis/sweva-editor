@@ -343,6 +343,11 @@
                         <paper-button raised on-click="handleUserUpdateClick">Update</paper-button>
                     </div>
                 </paper-card>
+                <paper-card heading="Compilation Settings">
+                    <div class="card-content">
+                        <paper-toggle-button checked="{{recompile}}" on-change="handleCompilationSetting">Recompile all code locally</paper-toggle-button>
+                    </div>
+                </paper-card>
             </div>
         </iron-pages>
         <div id="demo-controls" class$="{{_getCollapsedStyle(collapsed)}}">
@@ -579,12 +584,18 @@
             this.handleCreateNodeUrl(event, a, true);
           }
 
-          handleUserUpdateClick() {
-            this.dispatchEvent(new CustomEvent('userdatachanged', { bubbles: true, composed: true , detail: {
-              name: this.username,
-              color: this.usercolor
-            }}));
-          }
+            handleUserUpdateClick() {
+                this.dispatchEvent(new CustomEvent('userdatachanged', { bubbles: true, composed: true , detail: {
+                        name: this.username,
+                        color: this.usercolor
+                    }}));
+            }
+            handleCompilationSetting() {
+              console.log(this)
+                this.dispatchEvent(new CustomEvent('userdatachanged', { bubbles: true, composed: true , detail: {
+                        recompile: this.recompile
+                    }}));
+            }
 
           updateNode(node) {
             this.selectedNode = node;
