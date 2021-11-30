@@ -49,7 +49,6 @@
     "paper-swatch-picker": "PolymerElements/paper-swatch-picker#^2.0.1",
     "paper-card": "PolymerElements/paper-card#^2.0.0",
     "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",
-    "sweva-core": "rwth-acis/sweva-core#sweva-core-mqtt",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
     "neon-animation": "PolymerElements/neon-animation#^2.0.2",
     "juicy-ace-editor": "^2.0.5"
