@@ -51,7 +51,9 @@
     "iron-component-page": "PolymerElements/iron-component-page#^3.0.1",
     "paper-toggle-button": "PolymerElements/paper-toggle-button#^2.0.0",
     "neon-animation": "PolymerElements/neon-animation#^2.0.2",
-    "juicy-ace-editor": "^2.0.5"
+    "juicy-ace-editor": "^2.0.5",
+    "web-animations-js": "^2.1.3",
+    "sweva-core": "rwth-acis/sweva-core#4aae134f66"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",
