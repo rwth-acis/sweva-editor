@@ -309,9 +309,9 @@
                 (function (event) {
 
                   if (event.type === 'add') {
-                    // console.log('eventuser', event.name, event.type);
-                    // console.log(yjs.share.users);
-                    //console.log(Object.keys(yjs.share.users.opContents));
+                    console.log('eventuser', event.name, event.type);
+                    console.log(yjs.share.users);
+                    console.log(Object.keys(yjs.share.users.opContents));
                     try {
                       var map = yjs.share.users.get(event.name);
                       var cursor = map.get('cursor');

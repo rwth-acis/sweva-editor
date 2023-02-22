@@ -1,7 +1,0 @@
-node_modules
-dist
-bower_components
-.tmp
-app/examplesJSON/*
-
-docs
