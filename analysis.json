@@ -62604,7 +62604,7 @@
           "metadata": {
             "polymer": {}
           },
-          "defaultValue": "\"http://127.0.0.1:1234\""
+          "defaultValue": "\"https://yjs.dbis.rwth-aachen.de:5072","
         },
         {
           "name": "project",
