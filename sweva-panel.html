@@ -358,7 +358,15 @@
             <paper-icon-button title="Add Input Node" icon="icons:accessibility" on-click="handleCreateInputNode" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
             <paper-icon-button title="Select Visualization" style="margin-top:25px;" icon="icons:timeline" on-click="handleOpenVisualizationSelect" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
             <paper-icon-button title="Update Visualization Model" style="background:#ff6a00;color:white" icon="icons:input" on-click="handleUpdateModel" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
+            <paper-icon-button title="Available P2P Devices" style="background:#1572db;color:white" icon="icons:radio-button-checked" on-click="handleP2PDevices" class$="{{_getCollapsedStyle(collapsed)}}"></paper-icon-button>
         </div>
+        <paper-dialog id="p2pDevicesDialog">
+            <h2>Available P2P Devices</h2>
+            <div id="p2pDevicesContent"></div>
+            <div class="buttons">
+                <paper-button dialog-dismiss>Close</paper-button>
+            </div>
+        </paper-dialog>
     </template>
 
     <script>
@@ -422,6 +430,28 @@
             }
             return '';
           }
+
+          handleP2PDevices() {
+                // Open a popup window
+                //TODO: get the peers from the backend
+                var popupWindow = window.open('', 'P2P Devices', 'width=400,height=300');
+                var popupDocument = popupWindow.document;
+
+                // Write the desired text content into the popup document
+                popupDocument.write('<html><body>');
+                popupDocument.write('<h1>Available P2P Devices</h1>');
+                popupDocument.write('<p>Display a list of devices in the P2P network here.</p>');
+                popupDocument.write('<button onclick="handleButtonClick()">Refresh list</button>');
+
+                popupDocument.write('</body></html>');
+                // Close the writing stream to display the content
+                popupDocument.close();
+                //Refresh the list of devices
+              popupDocument.handleButtonClick = function() {
+                  // todo link to same handleAvailableDEvices function !
+                  alert('Button clicked!');
+              };
+            }
 
           handleCreateInputNode() {
             this.dispatchEvent(new CustomEvent('createinputnode', { bubbles: true, composed: true}));
