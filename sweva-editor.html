@@ -526,11 +526,13 @@ Example:
       handleUpdateModel() {
         var nodeManager = this.shadowRoot.querySelector('sweva-node-manager');
         var code = this.project.code;
+
         if (code.trim().length == 0) {
           code = sweva.ComposableLoader.getDefaultComposition();
         }
         var obj = nodeManager.getComposition(code);
-        console.log(obj); // for testing purposes will remove after visualisation part is ready.
+        //console.log('EDITOR obj OUTPUT=');
+        //console.log(obj); // for testing purposes will remove after visualisation part is ready.
         this.dispatchEvent(new CustomEvent('modelupdated', { bubbles: true, composed: true , detail: obj }));
       }
 
