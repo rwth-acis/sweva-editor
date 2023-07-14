@@ -17,9 +17,9 @@
             }
 
             paper-icon-button {
-               
 
-                
+
+
                 border: none;
                 margin-left: auto;
                 margin-right: auto;
@@ -54,47 +54,55 @@
        
     </template>
     <script>
-        (function () {
-            'use strict';
+            class SwevaCanvasControls extends Polymer.Element {
+                static get is() {
+                    return 'sweva-canvas-controls';
+                }
 
-            Polymer({
-                is: 'sweva-canvas-controls',
-                properties: {
-                    zoomValue: {
-                        type: Number,
-                        value: 1
-                    },
-                    maxZoom: {
-                        type: Number,
-                        value: 1
-                    },
-                    minZoom: {
-                        type: Number,
-                        value: 0.2
+                static get properties() {
+                    return {
+                        /* properties meta data object just like 1.x */
+                        zoomValue: {
+                            type: Number,
+                            value: 1
+                        },
+                        maxZoom: {
+                            type: Number,
+                            value: 1
+                        },
+                        minZoom: {
+                            type: Number,
+                            value: 0.2
+                        }
                     }
-                },
-                ready: function () {
+                }
+                ready() {
+                    super.ready();
+                }
 
-                },
-                handleCenterClick: function (event) {
-                    this.fire('centerclick', {});
-                },
-                handleZoomInClick: function (event) {
-                    this.fire('zoomclick', { delta: 1 });
-                },
-                handleZoomOutClick: function (event) {
-                    this.fire('zoomclick', { delta: -1 });
-                },
-                handleZoomSlider: function (event) {
-                    var value = this.$$('#zoom-slider').value;
-                    this.fire('zoomslide', { value: value });
-                },
-                adjustZoomSlider: function (zoom) {
+                handleCenterClick(event) {
+                    this.dispatchEvent(new CustomEvent('centerclick', { bubbles: true, composed: true , detail:{} }));
+                }
+
+                handleZoomInClick(event) {
+                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, detail:{delta: 1}  }));
+                }
+                handleZoomOutClick(event) {
+                    this.dispatchEvent(new CustomEvent('zoomclick', { bubbles: true, composed: true, detail:{delta: -1} }));
+                }
+                handleZoomSlider(event) {
+                    var value = this.shadowRoot.querySelector('#zoom-slider').value;
+                    this.dispatchEvent(new CustomEvent('zoomslide', { bubbles: true, composed: true, detail:{value: value }}));
+                }
+                adjustZoomSlider(zoom) {
                     if (this.zoomValue != zoom) {
                         this.zoomValue = zoom;
                     }
                 }
-            });
-        })();
+
+            }
+
+            // Register custom element definition using standard platform API
+            customElements.define(SwevaCanvasControls.is, SwevaCanvasControls);
     </script>
 </dom-module>

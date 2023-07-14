@@ -10,28 +10,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <title>sweva-editor Demo</title>
-    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
-    <link rel="import" href="../sweva-editor.html">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <title>sweva-editor Demo</title>
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <link rel="import" href="../sweva-editor.html">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0 !important;
+    }
+  </style>
 </head>
 <body unresolved>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0 !important;
-        }
-
-        sweva-editor {
-        }
-    </style>
-    <sweva-editor repository-address="http://localhost:5001/examplesJSON/"
-                  repository-suffix=".json"
-                  room="swevatest46">
-    </sweva-editor>
-
-    <script>
-    </script>
+  <sweva-editor repositoryUrlPrefix="/bower_components/sweva-module-repos/"
+                repositoryUrlSuffix=".json"
+                room="test">
+  </sweva-editor>
 </body>
 </html>

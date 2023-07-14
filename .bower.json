@@ -1,6 +1,5 @@
 {
   "name": "sweva-editor",
-  "version": "1.0.0",
   "authors": [
     "Anonymous <anonymous@example.com>"
   ],
@@ -8,7 +7,7 @@
   "keywords": [],
   "main": "sweva-editor.html",
   "license": "",
-  "homepage": "",
+  "homepage": "https://github.com/rwth-acis/sweva-editor",
   "ignore": [
     "/.*",
     "/test/"
@@ -63,5 +62,14 @@
   "resolutions": {
     "graphlib": "^2.0.0",
     "lodash": "^4.11.1"
-  }
+  },
+  "_release": "56d5dfc7b9",
+  "_resolution": {
+    "type": "branch",
+    "branch": "sweva-iot",
+    "commit": "56d5dfc7b9fcbea1214502c2622b540311ca0f4c"
+  },
+  "_source": "https://github.com/rwth-acis/sweva-editor.git",
+  "_target": "sweva-iot",
+  "_originalSource": "rwth-acis/sweva-editor"
 }
